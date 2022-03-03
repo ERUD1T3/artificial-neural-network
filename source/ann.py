@@ -4,6 +4,13 @@
 #   Date: 2/23/2022
 #   file: ann.py
 #   Description: main class for artificial neural network
+#   Implementation of backpropagation algorithm for a 
+#   feed forward neural network with one hidden layer
+#   input parameters are:
+#   - learning rate
+#   - number of hidden units
+#   - number of iterations
+#   - momentum
 #############################################################
 
 class ANN:
@@ -21,6 +28,11 @@ class ANN:
         debug=True
     ) -> None:
         
+        '''
+        Initialize the Artificial Neural Network
+        '''
+
+
         self.num_input = num_input
         self.num_hidden = num_hidden
         self.num_output = num_ouptut
@@ -28,3 +40,9 @@ class ANN:
         self.momentum = momentum
         self.debug = debug
         
+
+    def train(self, inputs, targets):
+        '''
+        Train the Artificial Neural Network
+        '''
+        pass

@@ -8,16 +8,13 @@
 
 # imports
 import argparse
-from learner import Learner
-from utils import consolidate_rules
-
+from ann import ANN
 
 def parse_args():
-    '''parse the arguments for the titcactoe game'''
+    '''parse the arguments for artificial neural network'''
 
     parser = argparse.ArgumentParser(
-        description='Decision Tree Learning program to classify both \
-            discrete and continuous data'
+        description='Artificial Neural Network for classification'
     )
 
     parser.add_argument(
@@ -42,17 +39,48 @@ def parse_args():
     )
 
     parser.add_argument(
+        '-w', '--weights',
+        type=str , 
+        required=False,
+        help='path to save the weights (optional)'
+    )
+
+    parser.add_argument(
+        '-u', '--hidden-units',
+        type=int, 
+        required=False,
+        help='number of hidden units (default: 3)'
+    )
+
+    parser.add_argument(
+        '-e', '--epochs',
+        type=int, 
+        required=False,
+        default=10,
+        help='number of epochs (default: 10)'
+    )
+
+    parser.add_argument(
+        '-l', '--learning-rate',
+        type=float, 
+        required=False,
+        default=0.1,
+        help='learning rate (default: 0.1)',
+    )
+
+    parser.add_argument(
+        '-m', '--momentum',
+        type=float, 
+        required=False,
+        default=0.0,
+        help='momentum (default: 0.0)',
+    )
+
+    parser.add_argument(
         '--debug',
         action='store_true',
         default=False,
         help='debug mode, prints statements activated (optional)'
-    )
-    
-    parser.add_argument(
-        '--prune',
-        action='store_true',
-        default=False,
-        help='prune the tree using rule post pruning (optional)'
     )
 
     # parse arguments
@@ -68,8 +96,25 @@ def main():
     training_path = args.training
     testing_path = args.testing
     attributes_path = args.attributes
+    weights_path = args.weights
     debugging = args.debug
-    prune = args.prune
+    
+    # hyperparameters
+    hidden_units = args.hidden_units
+    epochs = args.epochs
+    lr = args.learning_rate
+    momentum = args.momentum
+
+
+    # create the artificial neural network
+    ann = ANN()
+
+    # train the artificial neural network
+    ann.train()
+
+    # test the artificial neural network
+    ann.test()
+    
 
 
 
