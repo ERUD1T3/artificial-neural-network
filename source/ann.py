@@ -14,7 +14,7 @@
 #############################################################
 
 from utils import read_attributes, read_data
-
+import math
 
 class ANN:
     '''
@@ -36,33 +36,97 @@ class ANN:
         '''
         Initialize the Artificial Neural Network
         '''
-
-        # reading data and attributes 
-        self.training = read_data(training, self.debug)
-        self.testing = read_data(testing, self.debug)
-        self.attributes, self.in_attr, self.out_attr = read_attributes(self.attributes, self.debug) 
-        
         
         # hyperparameters
         self.hidden_units = hidden_units
         self.lr = lr
         self.momentum = momentum
         self.debug = debug
+        self.epochs = epochs
+        self.INIT_VAL = 0.01 # initial value for weights and biases
     
+        # reading data and attributes 
+        self.training = read_data(training, self.debug)
+        self.testing = read_data(testing, self.debug)
+        self.attributes, self.in_attr, self.out_attr = read_attributes(attributes, self.debug) 
 
         # initialize the weights
-        input_unit = len(self.in_attr)
-        output_unit = len(self.out_attr)
+        self.input_unit = len(self.in_attr)
+        self.output_unit = len(self.out_attr)
 
-        self.weights = [[
-            [0.0 for _ in range(input_unit + 1)]
-            for _ in range(self.hidden_units) 
-        ]]
+        self.weights = {
+            'hidden': [[self.INIT_VAL for _ in range(self.input_unit + 1)]
+                        for _ in range(self.hidden_units)],
+            'output': [[self.INIT_VAL for _ in range(self.hidden_units + 1)]
+                        for _ in range(self.output_unit)]
+        }
 
-        
+        # print the everything
+        if self.debug:
+            print('Training data: ', self.training)
+            print('Testing data: ', self.testing)
+            print('Attributes: ', self.attributes)
+            print('Input attributes: ', self.in_attr)
+            print('Output attributes: ', self.out_attr)
+            print('learning rate: ', self.lr)
+            print('momentum: ', self.momentum)
+            print('epochs: ', self.epochs)
+            print('Weights: ', self.weights)
+            print('Input units: ', self.input_unit)
+            print('Output units: ', self.output_unit)
+            print('Hidden units: ', self.hidden_units)
+             
+    
 
-    def train(self, inputs, targets):
+    def sigmoid(self, x):
+        '''
+        Sigmoid activation function
+        '''
+        return 1 / (1 + math.exp(-x))
+
+    def d_sigmoid(self, x):
+        '''
+        Derivative of the sigmoid function
+        '''
+        return x * (1 - x)
+
+    def feed_forward(self, inputs):
+        '''
+        Feed forward the Artificial Neural Network
+        '''
+        pass
+
+    def back_propagate(self, targets):
+        '''
+        Back propagate the Artificial Neural Network
+        '''
+        pass
+
+    def train(self):
         '''
         Train the Artificial Neural Network
+        '''
+        pass
+
+
+    def test(self, test_data=None):
+        '''
+        Test the Artificial Neural Network
+        '''
+        # null check
+        test_data = test_data or self.testing
+        
+        if self.debug:
+            print('Testing data: ', test_data)
+
+    def save(self, filename):
+        '''
+        Save the Artificial Neural Network
+        '''
+        pass
+
+    def load(self, filename):
+        '''
+        Load the Artificial Neural Network
         '''
         pass

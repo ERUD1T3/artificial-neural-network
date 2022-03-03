@@ -107,7 +107,16 @@ def main():
 
 
     # create the artificial neural network
-    ann = ANN()
+    ann = ANN(
+        training_path,
+        testing_path,
+        attributes_path,
+        hidden_units,
+        lr,
+        epochs,
+        momentum,
+        debugging
+    )
 
     # train the artificial neural network
     ann.train()
