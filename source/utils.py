@@ -44,7 +44,8 @@ def read_attributes(attr_path:str, _debug=False):
     '''
 
     attributes = {}
-    order = []
+    in_attr, out_attr = [], []
+    is_input = True
 
         # read in the attributes
     with open(attr_path, 'r') as f:
@@ -54,19 +55,27 @@ def read_attributes(attr_path:str, _debug=False):
                 
                 # storing the attributes
                 attributes[words[0]] = words[1:]
-                order.append(words[0])
+
+                # storing the input attributes
+                if is_input:
+                    in_attr.append(words[0])
+                else:
+                    out_attr.append(words[0])
+                # order.append(words[0])
+            else:
+                is_input = False
 
             
     if _debug:
         print('Attributes: ', attributes)
-        print('Order: ', order)
-        print('Final Attribute: ', order[-1])
+        print('Input attributes: ', in_attr)
+        print('Output attributes: ', out_attr)
 
-    if len(order) == 0:
+    if len(attributes) == 0:
         raise Exception('No attributes found')
 
 
-    return attributes, order
+    return attributes, in_attr, out_attr
 
 
 def read_data(data_path: str, _debug=False):

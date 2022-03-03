@@ -13,6 +13,9 @@
 #   - momentum
 #############################################################
 
+from utils import read_attributes, read_data
+
+
 class ANN:
     '''
     Feed Forward Artificial Neural Network Class
@@ -20,10 +23,12 @@ class ANN:
     '''
     def __init__(
         self, 
-        num_input, 
-        num_hidden, 
-        num_ouptut, 
+        training,
+        testing,
+        attributes,
+        hidden_units, 
         lr, 
+        epochs,
         momentum, 
         debug=True
     ) -> None:
@@ -32,13 +37,28 @@ class ANN:
         Initialize the Artificial Neural Network
         '''
 
-
-        self.num_input = num_input
-        self.num_hidden = num_hidden
-        self.num_output = num_ouptut
+        # reading data and attributes 
+        self.training = read_data(training, self.debug)
+        self.testing = read_data(testing, self.debug)
+        self.attributes, self.in_attr, self.out_attr = read_attributes(self.attributes, self.debug) 
+        
+        
+        # hyperparameters
+        self.hidden_units = hidden_units
         self.lr = lr
         self.momentum = momentum
         self.debug = debug
+    
+
+        # initialize the weights
+        input_unit = len(self.in_attr)
+        output_unit = len(self.out_attr)
+
+        self.weights = [[
+            [0.0 for _ in range(input_unit + 1)]
+            for _ in range(self.hidden_units) 
+        ]]
+
         
 
     def train(self, inputs, targets):
