@@ -61,6 +61,14 @@ class ANN:
                         for _ in range(self.output_unit)]
         }
 
+        # network topology
+        # self.topology = {
+        #     'linear': str(self.input_unit),
+        #     'sigmoid': self.sigmoid,
+        #     'hidden': self.hidden_units,
+        #     'output': self.output_unit
+        # }
+
         # print the everything
         if self.debug:
             print('Training data: ', self.training)
@@ -88,13 +96,34 @@ class ANN:
         '''
         Derivative of the sigmoid function
         '''
-        return x * (1 - x)
+        y = self.sigmoid(x)
+        return y * (1 - y)
 
-    def feed_forward(self, inputs):
+    # TODO: test this function
+    def feed_forward(self, instance):
         '''
         Feed forward the Artificial Neural Network
         '''
-        pass
+        hidden_res = [0.0 for _ in range(self.hidden_units)]
+        output_res = [0.0 for _ in range(self.output_unit)]
+
+        # feed forward the hidden layer
+        for i in range(self.hidden_units):
+            for j in range(self.input_unit):
+                hidden_res[i] += self.weights['hidden'][i][j] * instance[j]
+            hidden_res[i] += self.weights['hidden'][i][self.input_unit] # bias
+
+        hidden_res = [self.sigmoid(x) for x in hidden_res]
+
+        # feed forward the output layer
+        for i in range(self.output_unit):
+            for j in range(self.hidden_units):
+                output_res[i] += self.weights['output'][i][j] * hidden_res[j]
+            output_res[i] += self.weights['output'][i][self.hidden_units] # bias
+    
+        output_res = [self.sigmoid(x) for x in output_res]
+
+        return output_res
 
     def back_propagate(self, targets):
         '''
