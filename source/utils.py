@@ -7,6 +7,7 @@
 #   network learning
 #############################################################
 
+from base64 import encode
 import random
 
 def corrupt_data(data, classes, percent):
@@ -116,3 +117,42 @@ def read_data(data_path, input_size, output_size, _debug=False):
     return data
 
 
+def onehot(instance, attr_values, in_attrs, out_attrs, _debug=False):
+    '''
+    Preprocess to convert a data instance 
+    to one-of-n/onehot encoding
+    '''
+    #Input attributes is discrete
+    # Outlook Sunny Overcast Rain -> Outlook: [a, b, c]
+    # Temperature Hot Mild Cool -> Temperature: [d, e, f]
+    # Humidity High Normal -> Humidity: [g, h]
+    # Wind Weak Strong -> Wind: [i, j]
+    # Concatenate all encoded attributes
+    # [a, b, c, d, e, f, g, h, i, j]
+
+    #Output attributes is discrete
+    # PlayTennis Yes No -> PlayTennis [x,y]
+
+    # input output pairs are 
+    # [([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
+
+    # get the number of input attribute values 
+    num_in_attr_values = 0
+    for attr in in_attrs:
+        num_in_attr_values += len(attr_values[attr])
+
+    # get the number of output attribute values
+    num_out_attr_values = 0
+    for attr in out_attrs:
+        num_out_attr_values += len(attr_values[attr])
+
+    encoded_in = [0 for _ in range(num_in_attr_values)]
+    encoded_out = [0 for _ in range(num_out_attr_values)]
+
+    # loop through input attributes
+    for a in len(in_attrs):
+        attr = in_attrs[a]
+        # get the index of the attribute value
+        index = attr_values[attr].index(instance[attr])
+        # set the index to 1
+        encoded_in[a * index] = 1

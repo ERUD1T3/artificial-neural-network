@@ -71,6 +71,7 @@ class ANN:
             and len(self.attributes[self.out_attr[0]]) > 1:
             self.output_unit = len(self.attributes[self.out_attr[0]])
 
+
         # initialize the weights
         self.weights = {
             'hidden': [[self.INIT_VAL for _ in range(self.input_unit + 1)]
@@ -78,7 +79,6 @@ class ANN:
             'output': [[self.INIT_VAL for _ in range(self.hidden_units + 1)]
                         for _ in range(self.output_unit)]
         }
-
 
         # print the everything
         if self.debug:
@@ -121,8 +121,6 @@ class ANN:
 
         # get the number of classes
         classes = len(values)
-        
-        
 
     def sigmoid(self, x):
         '''
@@ -166,6 +164,7 @@ class ANN:
     def back_propagate(self, targets):
         '''
         Back propagate the Artificial Neural Network
+        with momentum and learning rate
         '''
         pass
 
