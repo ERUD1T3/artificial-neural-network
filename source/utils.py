@@ -38,7 +38,7 @@ def corrupt_data(data, classes, percent):
     return data
 
 
-def read_attributes(attr_path:str, _debug=False):
+def read_attributes(attr_path, _debug=False):
     '''
     Read in the attributes
     '''
@@ -77,20 +77,35 @@ def read_attributes(attr_path:str, _debug=False):
 
     return attributes, in_attr, out_attr
 
-
-def read_data(data_path: str, _debug=False):
+def read_data(data_path, input_size, output_size, _debug=False):
     '''
     Read in the training data and testing data
     '''
-
     data = []
+    In = [None for _ in range(input_size)]
+    Out = [None for _ in range(output_size)]
 
-        # read in the attributes
+    # read in the attributes
     with open(data_path, 'r') as f:
         for line in f:
-                words = line.strip().split()
-                data.append(words)
-            
+            items = line.strip().split()
+
+            if _debug:
+                print('Items: ', items)
+
+            # get items iterator
+            items_iter = iter(items)
+
+            # get inputs
+            for i in range(input_size):
+                In[i] = (next(items_iter))
+
+            # get outputs
+            for o in range(output_size):
+                Out[o] = (next(items_iter))
+
+            data.append((In, Out))
+                
     if _debug:
         print('Read data: ', data)
 

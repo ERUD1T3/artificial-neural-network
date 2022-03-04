@@ -8,3 +8,25 @@ python source/main.py \
 -l 1e-3 \
 -m 0.0 \
 --debug
+
+python source/main.py \
+-a data/iris/iris-attr.txt \
+-d data/iris/iris-train.txt \
+-t data/iris/iris-test.txt \
+-w model/weights.txt \
+-u 3 \
+-e 100 \
+-l 1e-3 \
+-m 0.0 \
+--debug
+
+python source/main.py \
+-a data/tennis/tennis-attr.txt \
+-d data/tennis/tennis-train.txt \
+-t data/tennis/tennis-test.txt \
+-w model/weights.txt \
+-u 3 \
+-e 100 \
+-l 1e-3 \
+-m 0.0 \
+--debug

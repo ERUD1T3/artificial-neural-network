@@ -45,15 +45,28 @@ class ANN:
         self.epochs = epochs
         self.INIT_VAL = 0.01 # initial value for weights and biases
     
-        # reading data and attributes 
-        self.training = read_data(training, self.debug)
-        self.testing = read_data(testing, self.debug)
+        # reading attributes 
         self.attributes, self.in_attr, self.out_attr = read_attributes(attributes, self.debug) 
 
-        # initialize the weights
         self.input_unit = len(self.in_attr)
         self.output_unit = len(self.out_attr)
+        self.topology = None # ideally dynamically generated
 
+        # reading data
+        self.training = read_data(
+            training, 
+            self.input_unit, 
+            self.output_unit, 
+            self.debug
+        )
+        self.testing = read_data(
+            testing, 
+            self.input_unit, 
+            self.output_unit, 
+            self.debug
+        )
+
+        # initialize the weights
         self.weights = {
             'hidden': [[self.INIT_VAL for _ in range(self.input_unit + 1)]
                         for _ in range(self.hidden_units)],
@@ -61,13 +74,6 @@ class ANN:
                         for _ in range(self.output_unit)]
         }
 
-        # network topology
-        # self.topology = {
-        #     'linear': str(self.input_unit),
-        #     'sigmoid': self.sigmoid,
-        #     'hidden': self.hidden_units,
-        #     'output': self.output_unit
-        # }
 
         # print the everything
         if self.debug:
@@ -84,7 +90,24 @@ class ANN:
             print('Output units: ', self.output_unit)
             print('Hidden units: ', self.hidden_units)
              
-    
+    def print_weights(self):
+        '''
+        Print the weights of the Artificial Neural Network
+        '''
+        print('Weights: ', self.weights)
+
+    def print_topology(self):
+        '''
+        Print the topology of the Artificial Neural Network
+        '''
+         # network topology
+        self.topology = {
+            'linear1': f'fully connected ({self.input_unit}x{self.hidden_units})',
+            'activation1': 'sigmoid',
+            'linear2': f'fully connected ({self.hidden_units}x{self.output_unit})',
+            'activation2': 'sigmoid'
+        }
+        print('Topology: ', self.topology)
 
     def sigmoid(self, x):
         '''
