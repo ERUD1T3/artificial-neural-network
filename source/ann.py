@@ -66,6 +66,11 @@ class ANN:
             self.debug
         )
 
+        # case of discrete attributes
+        if len(self.out_attr) == 1 \
+            and len(self.attributes[self.out_attr[0]]) > 1:
+            self.output_unit = len(self.attributes[self.out_attr[0]])
+
         # initialize the weights
         self.weights = {
             'hidden': [[self.INIT_VAL for _ in range(self.input_unit + 1)]
@@ -108,6 +113,16 @@ class ANN:
             'activation2': 'sigmoid'
         }
         print('Topology: ', self.topology)
+
+    def oneofn(self, attribute, values, _debug=False):
+        '''
+        Preprocess the data to one-of-n encoding
+        '''
+
+        # get the number of classes
+        classes = len(values)
+        
+        
 
     def sigmoid(self, x):
         '''

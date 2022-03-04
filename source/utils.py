@@ -77,6 +77,7 @@ def read_attributes(attr_path, _debug=False):
 
     return attributes, in_attr, out_attr
 
+
 def read_data(data_path, input_size, output_size, _debug=False):
     '''
     Read in the training data and testing data
@@ -90,8 +91,8 @@ def read_data(data_path, input_size, output_size, _debug=False):
         for line in f:
             items = line.strip().split()
 
-            if _debug:
-                print('Items: ', items)
+            # if _debug:
+            #     print('Items: ', items)
 
             # get items iterator
             items_iter = iter(items)
@@ -115,39 +116,3 @@ def read_data(data_path, input_size, output_size, _debug=False):
     return data
 
 
-def preprocess_oneofn(data, classes, _debug=False):
-    '''
-    Preprocess the data to one-of-n encoding
-    '''
-
-    # get the number of classes
-    num_classes = len(classes)
-
-    # get the number of training examples
-    num_examples = len(data)
-
-    # get the number of attributes
-    num_attributes = len(data[0]) - 1
-
-    # create the one-of-n encoding
-    oneofn = []
-
-    # create the one-of-n encoding
-    for i in range(num_examples):
-        oneofn.append([])
-        for j in range(num_attributes):
-            oneofn[i].append(0)
-
-        # get the class label
-        class_label = data[i][-1]
-
-        # get the index of the class label
-        class_index = classes.index(class_label)
-
-        # set the one-of-n encoding
-        oneofn[i][class_index] = 1
-
-    if _debug:
-        print('One-of-n encoding: ', oneofn)
-
-    return oneofn
