@@ -134,25 +134,35 @@ def onehot(instance, attr_values, in_attrs, out_attrs, _debug=False):
     # PlayTennis Yes No -> PlayTennis [x,y]
 
     # input output pairs are 
-    # [([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
+    # ([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
 
-    # get the number of input attribute values 
-    num_in_attr_values = 0
-    for attr in in_attrs:
-        num_in_attr_values += len(attr_values[attr])
-
-    # get the number of output attribute values
-    num_out_attr_values = 0
-    for attr in out_attrs:
-        num_out_attr_values += len(attr_values[attr])
-
-    encoded_in = [0 for _ in range(num_in_attr_values)]
-    encoded_out = [0 for _ in range(num_out_attr_values)]
+    
+    encoded = {
+        attr: [0 for _ in range(len(attr_values[attr]))] 
+        for attr in (in_attrs + out_attrs)
+    } 
 
     # loop through input attributes
-    for a in len(in_attrs):
-        attr = in_attrs[a]
+    for attr in in_attrs:
         # get the index of the attribute value
         index = attr_values[attr].index(instance[attr])
         # set the index to 1
-        encoded_in[a * index] = 1
+        encoded[attr][index] = 1
+
+    # loop through output attributes
+    for attr in out_attrs:
+        # get the index of the attribute value
+        index = attr_values[attr].index(instance[attr])
+        # set the index to 1
+        encoded[attr][index] = 1
+
+    if _debug:
+        print('One-hot encoded: ', encoded)
+
+    In = []
+    Out = []
+
+    # clean up encoded
+    for attr in in_attrs:
+
+    retun
