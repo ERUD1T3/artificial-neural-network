@@ -164,5 +164,12 @@ def onehot(instance, attr_values, in_attrs, out_attrs, _debug=False):
 
     # clean up encoded
     for attr in in_attrs:
+        In += encoded[attr]
 
-    retun
+    for attr in out_attrs:
+        Out += encoded[attr]
+
+    if _debug:
+        print('One-hot encoded: ', In, Out)
+
+    return (In, Out)
