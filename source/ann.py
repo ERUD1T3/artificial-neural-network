@@ -13,7 +13,6 @@
 #   - momentum
 #############################################################
 
-from utils import read_attributes, read_data
 import math
 
 class ANN:
@@ -46,20 +45,20 @@ class ANN:
         self.INIT_VAL = 0.01 # initial value for weights and biases
     
         # reading attributes 
-        self.attributes, self.in_attr, self.out_attr = read_attributes(attributes, self.debug) 
+        self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes, self.debug) 
 
         self.input_unit = len(self.in_attr)
         self.output_unit = len(self.out_attr)
         self.topology = None # ideally dynamically generated
 
         # reading data
-        self.training = read_data(
+        self.training = self.read_data(
             training, 
             self.input_unit, 
             self.output_unit, 
             self.debug
         )
-        self.testing = read_data(
+        self.testing = self.read_data(
             testing, 
             self.input_unit, 
             self.output_unit, 
@@ -114,13 +113,160 @@ class ANN:
         }
         print('Topology: ', self.topology)
 
-    def oneofn(self, attribute, values, _debug=False):
+    # TODO: test this function
+    def save(self, filename):
         '''
-        Preprocess the data to one-of-n encoding
+        Save the Artificial Neural Network
+        '''
+        # save the weights onto a file
+        with open(filename, 'w') as f:
+            f.write(str(self.weights))
+
+
+    # TODO: test this function
+    def load(self, filename):
+        '''
+        Load the Artificial Neural Network
+        '''
+        # load the weights from a file
+        with open(filename, 'r') as f:
+            self.weights = eval(f.read())
+
+
+    def read_attributes(self, attr_path, _debug=False):
+        '''
+        Read in the attributes
         '''
 
-        # get the number of classes
-        classes = len(values)
+        attributes = {}
+        in_attr, out_attr = [], []
+        is_input = True
+
+            # read in the attributes
+        with open(attr_path, 'r') as f:
+            for line in f:
+                if len(line) > 1:
+                    words = line.strip().split()
+                    
+                    # storing the attributes
+                    attributes[words[0]] = words[1:]
+
+                    # storing the input attributes
+                    if is_input:
+                        in_attr.append(words[0])
+                    else:
+                        out_attr.append(words[0])
+                    # order.append(words[0])
+                else:
+                    is_input = False
+
+                
+        if _debug:
+            print('Attributes: ', attributes)
+            print('Input attributes: ', in_attr)
+            print('Output attributes: ', out_attr)
+
+        if len(attributes) == 0:
+            raise Exception('No attributes found')
+
+
+        return attributes, in_attr, out_attr
+
+
+    def read_data(self, data_path, input_size, output_size, _debug=False):
+        '''
+        Read in the training data and testing data
+        '''
+        data = []
+        In = [None for _ in range(input_size)]
+        Out = [None for _ in range(output_size)]
+
+        # read in the attributes
+        with open(data_path, 'r') as f:
+            for line in f:
+                items = line.strip().split()
+
+                # if _debug:
+                #     print('Items: ', items)
+
+                # get items iterator
+                items_iter = iter(items)
+
+                # get inputs
+                for i in range(input_size):
+                    In[i] = (next(items_iter))
+
+                # get outputs
+                for o in range(output_size):
+                    Out[o] = (next(items_iter))
+
+                data.append((In, Out))
+                    
+        if _debug:
+            print('Read data: ', data)
+
+        if len(data) == 0:
+            raise Exception('No data found')
+
+        return data
+
+
+    def onehot(self, instance, attr_values, in_attrs, out_attrs, _debug=False):
+        '''
+        Preprocess to convert a data instance 
+        to one-of-n/onehot encoding
+        '''
+        #Input attributes is discrete
+        # Outlook Sunny Overcast Rain -> Outlook: [a, b, c]
+        # Temperature Hot Mild Cool -> Temperature: [d, e, f]
+        # Humidity High Normal -> Humidity: [g, h]
+        # Wind Weak Strong -> Wind: [i, j]
+        # Concatenate all encoded attributes
+        # [a, b, c, d, e, f, g, h, i, j]
+
+        #Output attributes is discrete
+        # PlayTennis Yes No -> PlayTennis [x,y]
+
+        # input output pairs are 
+        # ([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
+
+        
+        encoded = {
+            attr: [0 for _ in range(len(attr_values[attr]))] 
+            for attr in (in_attrs + out_attrs)
+        } 
+
+        # loop through input attributes
+        for attr in in_attrs:
+            # get the index of the attribute value
+            index = attr_values[attr].index(instance[attr])
+            # set the index to 1
+            encoded[attr][index] = 1
+
+        # loop through output attributes
+        for attr in out_attrs:
+            # get the index of the attribute value
+            index = attr_values[attr].index(instance[attr])
+            # set the index to 1
+            encoded[attr][index] = 1
+
+        if _debug:
+            print('One-hot encoded: ', encoded)
+
+        In = []
+        Out = []
+
+        # clean up encoded
+        for attr in in_attrs:
+            In += encoded[attr]
+
+        for attr in out_attrs:
+            Out += encoded[attr]
+
+        if _debug:
+            print('One-hot encoded: ', In, Out)
+
+        return (In, Out)
 
     def sigmoid(self, x):
         '''
@@ -184,15 +330,3 @@ class ANN:
         
         if self.debug:
             print('Testing data: ', test_data)
-
-    def save(self, filename):
-        '''
-        Save the Artificial Neural Network
-        '''
-        pass
-
-    def load(self, filename):
-        '''
-        Load the Artificial Neural Network
-        '''
-        pass
