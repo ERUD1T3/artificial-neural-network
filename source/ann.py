@@ -45,30 +45,45 @@ class ANN:
         self.INIT_VAL = 0.01 # initial value for weights and biases
     
         # reading attributes 
-        self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes, self.debug) 
+        self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes) 
 
-        self.input_unit = len(self.in_attr)
-        self.output_unit = len(self.out_attr)
+        # getting total number of input units
+        self.input_unit = 0
+        for attr in self.in_attr:
+            values = self.attributes[attr]
+            # check specifically for identity
+            if values[0] == '0' and values[1] == '1':
+                self.input_unit += 1
+            else:
+                self.input_unit += len(values)
+
+        # getting total number of output units  
+        self.output_unit = 0
+        for attr in self.out_attr:
+            values = self.attributes[attr]
+            # check specifically for identity
+            if values[0] == '0' and values[1] == '1':
+                self.output_unit += 1
+            else:
+                self.output_unit += len(values)
         self.topology = None # ideally dynamically generated
 
         # reading data
         self.training = self.read_data(
             training, 
             self.input_unit, 
-            self.output_unit, 
-            self.debug
+            self.output_unit
         )
         self.testing = self.read_data(
             testing, 
             self.input_unit, 
-            self.output_unit, 
-            self.debug
+            self.output_unit
         )
 
         # case of discrete attributes
-        if len(self.out_attr) == 1 \
-            and len(self.attributes[self.out_attr[0]]) > 1:
-            self.output_unit = len(self.attributes[self.out_attr[0]])
+        # if len(self.out_attr) == 1 \
+        #     and len(self.attributes[self.out_attr[0]]) > 1:
+        #     self.output_unit = len(self.attributes[self.out_attr[0]])
 
 
         # initialize the weights
@@ -133,7 +148,7 @@ class ANN:
             self.weights = eval(f.read())
 
 
-    def read_attributes(self, attr_path, _debug=False):
+    def read_attributes(self, attr_path):
         '''
         Read in the attributes
         '''
@@ -161,7 +176,7 @@ class ANN:
                     is_input = False
 
                 
-        if _debug:
+        if self.debug:
             print('Attributes: ', attributes)
             print('Input attributes: ', in_attr)
             print('Output attributes: ', out_attr)
@@ -173,7 +188,7 @@ class ANN:
         return attributes, in_attr, out_attr
 
 
-    def read_data(self, data_path, input_size, output_size, _debug=False):
+    def read_data(self, data_path, input_size, output_size):
         '''
         Read in the training data and testing data
         '''
@@ -186,7 +201,7 @@ class ANN:
             for line in f:
                 items = line.strip().split()
 
-                # if _debug:
+                # if self.debug:
                 #     print('Items: ', items)
 
                 # get items iterator
@@ -200,18 +215,28 @@ class ANN:
                 for o in range(output_size):
                     Out[o] = (next(items_iter))
 
-                data.append((In, Out))
+                # check if the encoding should be applied
+                # when encoding applied, update the input or output units sizes
+
+                data.append(
+                    self.onehot(
+                        (In, Out), 
+                        self.attributes, 
+                        self.in_attr,
+                        self.out_attr,
+                    ))
                     
-        if _debug:
+        if self.debug:
             print('Read data: ', data)
 
         if len(data) == 0:
             raise Exception('No data found')
 
+        self.input_unit = 
         return data
 
 
-    def onehot(self, instance, attr_values, in_attrs, out_attrs, _debug=False):
+    def onehot(self, instance, attr_values, in_attrs, out_attrs):
         '''
         Preprocess to convert a data instance 
         to one-of-n/onehot encoding
@@ -229,28 +254,30 @@ class ANN:
 
         # input output pairs are 
         # ([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
-
+        # return instance
         
+
+
         encoded = {
             attr: [0 for _ in range(len(attr_values[attr]))] 
             for attr in (in_attrs + out_attrs)
         } 
 
         # loop through input attributes
-        for attr in in_attrs:
+        for i, attr in enumerate(in_attrs):
             # get the index of the attribute value
-            index = attr_values[attr].index(instance[attr])
+            index = attr_values[attr].index(instance[0][i])
             # set the index to 1
             encoded[attr][index] = 1
 
         # loop through output attributes
-        for attr in out_attrs:
+        for o, attr in enumerate(out_attrs):
             # get the index of the attribute value
-            index = attr_values[attr].index(instance[attr])
+            index = attr_values[attr].index(instance[1][o])
             # set the index to 1
             encoded[attr][index] = 1
 
-        if _debug:
+        if self.debug:
             print('One-hot encoded: ', encoded)
 
         In = []
@@ -263,7 +290,7 @@ class ANN:
         for attr in out_attrs:
             Out += encoded[attr]
 
-        if _debug:
+        if self.debug:
             print('One-hot encoded: ', In, Out)
 
         return (In, Out)
