@@ -187,6 +187,19 @@ class ANN:
 
         return attributes, in_attr, out_attr
 
+    def to_encode(self, attr):
+        '''
+        Return true if the value is discrete
+        to encode
+        '''
+        values = self.attributes[attr]
+        if len(values) > 1:
+            if values[0] == '0' and values[1] == '1':
+                return False
+            else:
+                return True
+        else:
+            return False
 
     def read_data(self, data_path, input_size, output_size):
         '''
