@@ -35,7 +35,8 @@ class ANN:
         '''
         Initialize the Artificial Neural Network
         '''
-        
+        self.topology = None # ideally dynamically generated
+
         # hyperparameters
         self.hidden_units = hidden_units
         self.lr = lr
@@ -66,19 +67,10 @@ class ANN:
                 self.output_unit += 1
             else:
                 self.output_unit += len(values)
-        self.topology = None # ideally dynamically generated
-
+       
         # reading data
-        self.training = self.read_data(
-            training, 
-            self.input_unit, 
-            self.output_unit
-        )
-        self.testing = self.read_data(
-            testing, 
-            self.input_unit, 
-            self.output_unit
-        )
+        self.training = self.read_data(training)
+        self.testing = self.read_data(testing)
 
         # case of discrete attributes
         # if len(self.out_attr) == 1 \
@@ -201,13 +193,12 @@ class ANN:
         else:
             return False
 
-    def read_data(self, data_path, input_size, output_size):
+    def read_data(self, data_path):
         '''
         Read in the training data and testing data
         '''
         data = []
-        In = [None for _ in range(input_size)]
-        Out = [None for _ in range(output_size)]
+        In, Out = [],[]
 
         # read in the attributes
         with open(data_path, 'r') as f:
@@ -221,23 +212,29 @@ class ANN:
                 items_iter = iter(items)
 
                 # get inputs
-                for i in range(input_size):
-                    In[i] = (next(items_iter))
+                for attr in self.in_attr:
+                    if self.to_encode(attr):
+                        # encode discrete values
+                        encoded = self.onehot(attr, next(items_iter))
+                        In += encoded # since encoded is a list
+                    else:
+                        # encode continuous values
+                        In.append(float(next(items_iter)))
 
                 # get outputs
-                for o in range(output_size):
-                    Out[o] = (next(items_iter))
+                for attr in self.out_attr:
+                    if self.to_encode(attr):
+                        # encode discrete values
+                        encoded = self.onehot(attr, next(items_iter))
+                        Out += encoded # since encoded is a list
+                    else:
+                        # encode continuous values
+                        Out.append(float(next(items_iter)))
 
                 # check if the encoding should be applied
                 # when encoding applied, update the input or output units sizes
 
-                data.append(
-                    self.onehot(
-                        (In, Out), 
-                        self.attributes, 
-                        self.in_attr,
-                        self.out_attr,
-                    ))
+                data.append((In, Out))
                     
         if self.debug:
             print('Read data: ', data)
@@ -245,11 +242,10 @@ class ANN:
         if len(data) == 0:
             raise Exception('No data found')
 
-        self.input_unit = 
         return data
 
 
-    def onehot(self, instance, attr_values, in_attrs, out_attrs):
+    def onehot(self, attr, value):
         '''
         Preprocess to convert a data instance 
         to one-of-n/onehot encoding
@@ -268,45 +264,16 @@ class ANN:
         # input output pairs are 
         # ([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
         # return instance
-        
+    
 
-
-        encoded = {
-            attr: [0 for _ in range(len(attr_values[attr]))] 
-            for attr in (in_attrs + out_attrs)
-        } 
-
-        # loop through input attributes
-        for i, attr in enumerate(in_attrs):
-            # get the index of the attribute value
-            index = attr_values[attr].index(instance[0][i])
-            # set the index to 1
-            encoded[attr][index] = 1
-
-        # loop through output attributes
-        for o, attr in enumerate(out_attrs):
-            # get the index of the attribute value
-            index = attr_values[attr].index(instance[1][o])
-            # set the index to 1
-            encoded[attr][index] = 1
+        # get the index of the value
+        encoded = [0.0 for _ in range(len(self.attributes[attr]))]
+        encoded[self.attributes[attr].index(value)] = 1.0
 
         if self.debug:
             print('One-hot encoded: ', encoded)
 
-        In = []
-        Out = []
-
-        # clean up encoded
-        for attr in in_attrs:
-            In += encoded[attr]
-
-        for attr in out_attrs:
-            Out += encoded[attr]
-
-        if self.debug:
-            print('One-hot encoded: ', In, Out)
-
-        return (In, Out)
+        return encoded
 
     def sigmoid(self, x):
         '''
