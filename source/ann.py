@@ -120,7 +120,13 @@ class ANN:
         }
         print('Topology: ', self.topology)
 
-    # TODO: test this function
+    def print_network(self):
+        '''
+        Print the network
+        '''
+        self.print_topology()
+        self.print_weights()
+
     def save(self, filename):
         '''
         Save the Artificial Neural Network
@@ -129,8 +135,6 @@ class ANN:
         with open(filename, 'w') as f:
             f.write(str(self.weights))
 
-
-    # TODO: test this function
     def load(self, filename):
         '''
         Load the Artificial Neural Network
@@ -138,6 +142,10 @@ class ANN:
         # load the weights from a file
         with open(filename, 'r') as f:
             self.weights = eval(f.read())
+
+        # print('one weight: ', self.weights['hidden'][0][0])
+
+        self.print_weights()
 
 
     def read_attributes(self, attr_path):

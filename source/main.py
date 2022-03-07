@@ -118,12 +118,22 @@ def main():
         debugging
     )
 
+    # print the network
+    ann.print_network()
+
     # train the artificial neural network
     ann.train()
 
     # test the artificial neural network
     ann.test()
     
+    # save the weights
+    if weights_path:
+        ann.save(weights_path)
+        print('weights saved to', weights_path)
+        # load the weights
+        ann.load(weights_path)
+        print('weights loaded from', weights_path)
 
 
 
