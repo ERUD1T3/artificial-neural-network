@@ -136,6 +136,13 @@ def main():
         print('weights loaded from', weights_path)
 
 
+    # feed forward
+    inferance = ann.feed_forward(ann.training[0][0])
+    print('inference', inferance)
+    # decode the output
+    print('decoded output', ann.decode(ann.attribute[ann.out_attr[0]],inferance))
+
+
 
     
 if __name__ == '__main__':

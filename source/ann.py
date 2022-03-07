@@ -292,6 +292,7 @@ class ANN:
 
         return encoded
 
+    # TODO: fix this function
     def decode(self, attr, encoded):
         '''
         Decode the encoded value
