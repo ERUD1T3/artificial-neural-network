@@ -185,6 +185,11 @@ class ANN:
         to encode
         '''
         values = self.attributes[attr]
+
+        if self.debug:
+            print('values: ', values)
+            print('the attribute to encode is: ', attr)
+
         if len(values) > 1:
             if values[0] == '0' and values[1] == '1':
                 return False
@@ -198,46 +203,50 @@ class ANN:
         Read in the training data and testing data
         '''
         data = []
-        In, Out = [],[]
 
         # read in the attributes
         with open(data_path, 'r') as f:
             for line in f:
-                items = line.strip().split()
+                if len(line) > 0:
+                    items = line.strip().split()
 
-                # if self.debug:
-                #     print('Items: ', items)
+                    # if self.debug:
+                    #     print('Items: ', items)
 
-                # get items iterator
-                items_iter = iter(items)
+                    # get items iterator
+                    items_iter = iter(items)
 
-                # get inputs
-                for attr in self.in_attr:
-                    if self.to_encode(attr):
-                        # encode discrete values
-                        encoded = self.onehot(attr, next(items_iter))
-                        In += encoded # since encoded is a list
-                    else:
-                        # encode continuous values
-                        In.append(float(next(items_iter)))
+                    In, Out = [],[]
+                    # get inputs
+                    for attr in self.in_attr:
+                        value = next(items_iter)
+                        if self.to_encode(attr):
+                            # encode discrete values
+                            encoded = self.onehot(attr, value)
+                            In += encoded # since encoded is a list
+                        else:
+                            # encode continuous values
+                            In.append(float(value))
 
-                # get outputs
-                for attr in self.out_attr:
-                    if self.to_encode(attr):
-                        # encode discrete values
-                        encoded = self.onehot(attr, next(items_iter))
-                        Out += encoded # since encoded is a list
-                    else:
-                        # encode continuous values
-                        Out.append(float(next(items_iter)))
+                    # get outputs
+                    for attr in self.out_attr:
+                        value = next(items_iter)
+                        if self.to_encode(attr):
+                            # encode discrete values
+                            encoded = self.onehot(attr, value)
+                            Out += encoded # since encoded is a list
+                        else:
+                            # encode continuous values
+                            Out.append(float(value))
 
-                # check if the encoding should be applied
-                # when encoding applied, update the input or output units sizes
+                    # check if the encoding should be applied
+                    # when encoding applied, update the input or output units sizes
 
-                data.append((In, Out))
+                    data.append((In, Out))
                     
-        if self.debug:
-            print('Read data: ', data)
+                    
+        # if self.debug:
+        #     print('Read data: ', data)
 
         if len(data) == 0:
             raise Exception('No data found')
