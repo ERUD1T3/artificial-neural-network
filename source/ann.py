@@ -284,6 +284,18 @@ class ANN:
 
         return encoded
 
+    def decode(self, attr, encoded):
+        '''
+        Decode the encoded value
+        '''
+        # get the index of the value
+        value = self.attributes[attr][encoded.index(1.0)]
+
+        if self.debug:
+            print('Decoded: ', value)
+
+        return value
+
     def sigmoid(self, x):
         '''
         Sigmoid activation function
@@ -346,3 +358,4 @@ class ANN:
         
         if self.debug:
             print('Testing data: ', test_data)
+
