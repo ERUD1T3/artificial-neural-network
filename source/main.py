@@ -77,6 +77,14 @@ def parse_args():
     )
 
     parser.add_argument(
+        'g','--decay',
+        type=float, 
+        required=False,
+        default=0.0,
+        help='weight decay gamma (default: 0.0)',
+    )
+
+    parser.add_argument(
         '--debug',
         action='store_true',
         default=False,
@@ -103,6 +111,7 @@ def main():
     hidden_units = args.hidden_units
     epochs = args.epochs
     lr = args.learning_rate
+    decay = args.decay
     momentum = args.momentum
 
 
@@ -115,6 +124,7 @@ def main():
         lr,
         epochs,
         momentum,
+        decay,
         debugging
     )
 

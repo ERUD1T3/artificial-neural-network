@@ -29,6 +29,7 @@ class ANN:
         lr, 
         epochs,
         momentum, 
+        decay,
         debug=True
     ) -> None:
         
@@ -41,6 +42,7 @@ class ANN:
         self.hidden_units = hidden_units
         self.lr = lr
         self.momentum = momentum
+        self.decay = decay
         self.debug = debug
         self.epochs = epochs
         self.INIT_VAL = 0.01 # initial value for weights and biases
@@ -318,7 +320,6 @@ class ANN:
         y = self.sigmoid(x)
         return y * (1 - y)
 
-    # TODO: test this function
     def feed_forward(self, instance):
         '''
         Feed forward the Artificial Neural Network
@@ -332,24 +333,63 @@ class ANN:
                 hidden_res[i] += self.weights['hidden'][i][j] * instance[j]
             hidden_res[i] += self.weights['hidden'][i][self.input_unit] # bias
 
-        hidden_res = [self.sigmoid(x) for x in hidden_res]
+        self.hidden_res = [self.sigmoid(x) for x in hidden_res]
 
         # feed forward the output layer
         for i in range(self.output_unit):
             for j in range(self.hidden_units):
-                output_res[i] += self.weights['output'][i][j] * hidden_res[j]
+                output_res[i] += self.weights['output'][i][j] * self.hidden_res[j]
             output_res[i] += self.weights['output'][i][self.hidden_units] # bias
     
         output_res = [self.sigmoid(x) for x in output_res]
 
         return output_res
 
-    def back_propagate(self, targets):
+    def loss(self, target, output):
         '''
-        Back propagate the Artificial Neural Network
-        with momentum and learning rate
+        Compute the loss for SGD
         '''
-        pass
+        loss = 0.0
+        for i in range(self.output_unit):
+            loss += (target[i] - output[i]) ** 2
+        loss /= 2.0
+
+        return loss
+
+    # TODO: add momentum, weight decay
+    def back_propagate(self, instance, output):
+        '''
+        Back propagate the error with momentum, weight 
+        decay and learning rate
+        SGD
+        '''
+
+        # get the target 
+        target = instance[1]
+
+        # compute the error for output layer
+        error = [0.0 for _ in range(self.output_unit)]
+        for i in range(self.output_unit):
+            error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i])
+
+        # compute the error for hidden layer
+        hidden_error = [0.0 for _ in range(self.hidden_units)]
+        for i in range(self.hidden_units):
+            for j in range(self.output_unit):
+                hidden_error[i] += error[j] * self.weights['output'][j][i]
+            hidden_error[i] *= self.d_sigmoid(self.hidden_res[i])
+
+        # update the weights
+        for i in range(self.output_unit):
+            for j in range(self.hidden_units):
+                self.weights['output'][i][j] += self.learning_rate * error[i] * self.hidden_res[j]
+            self.weights['output'][i][self.hidden_units] += self.learning_rate * error[i]
+
+        for i in range(self.hidden_units):
+            for j in range(self.input_unit):
+                self.weights['hidden'][i][j] += self.learning_rate * hidden_error[i] * instance[j]
+            self.weights['hidden'][i][self.input_unit] += self.learning_rate * hidden_error[i]
+        
 
     def train(self):
         '''
