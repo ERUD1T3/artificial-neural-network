@@ -13,6 +13,8 @@
 #   - momentum
 #############################################################
 
+from distutils.log import error
+import errno
 import math
 
 class ANN:
@@ -51,24 +53,24 @@ class ANN:
         self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes) 
 
         # getting total number of input units
-        self.input_unit = 0
+        self.input_units = 0
         for attr in self.in_attr:
             values = self.attributes[attr]
             # check specifically for identity
             if values[0] == '0' and values[1] == '1':
-                self.input_unit += 1
+                self.input_units += 1
             else:
-                self.input_unit += len(values)
+                self.input_units += len(values)
 
         # getting total number of output units  
-        self.output_unit = 0
+        self.output_units = 0
         for attr in self.out_attr:
             values = self.attributes[attr]
             # check specifically for identity
             if values[0] == '0' and values[1] == '1':
-                self.output_unit += 1
+                self.output_units += 1
             else:
-                self.output_unit += len(values)
+                self.output_units += len(values)
        
         # reading data
         self.training = self.read_data(training)
@@ -77,15 +79,15 @@ class ANN:
         # case of discrete attributes
         # if len(self.out_attr) == 1 \
         #     and len(self.attributes[self.out_attr[0]]) > 1:
-        #     self.output_unit = len(self.attributes[self.out_attr[0]])
+        #     self.output_units = len(self.attributes[self.out_attr[0]])
 
 
         # initialize the weights
         self.weights = {
-            'hidden': [[self.INIT_VAL for _ in range(self.input_unit + 1)]
+            'hidden': [[self.INIT_VAL for _ in range(self.input_units + 1)]
                         for _ in range(self.hidden_units)],
             'output': [[self.INIT_VAL for _ in range(self.hidden_units + 1)]
-                        for _ in range(self.output_unit)]
+                        for _ in range(self.output_units)]
         }
 
         # print the everything
@@ -99,8 +101,8 @@ class ANN:
             print('momentum: ', self.momentum)
             print('epochs: ', self.epochs)
             print('Weights: ', self.weights)
-            print('Input units: ', self.input_unit)
-            print('Output units: ', self.output_unit)
+            print('Input units: ', self.input_units)
+            print('Output units: ', self.output_units)
             print('Hidden units: ', self.hidden_units)
              
     def print_weights(self):
@@ -115,9 +117,9 @@ class ANN:
         '''
          # network topology
         self.topology = {
-            'linear1': f'fully connected ({self.input_unit}x{self.hidden_units})',
+            'linear1': f'fully connected ({self.input_units}x{self.hidden_units})',
             'activation1': 'sigmoid',
-            'linear2': f'fully connected ({self.hidden_units}x{self.output_unit})',
+            'linear2': f'fully connected ({self.hidden_units}x{self.output_units})',
             'activation2': 'sigmoid'
         }
         print('Topology: ', self.topology)
@@ -325,18 +327,18 @@ class ANN:
         Feed forward the Artificial Neural Network
         '''
         hidden_res = [0.0 for _ in range(self.hidden_units)]
-        output_res = [0.0 for _ in range(self.output_unit)]
+        output_res = [0.0 for _ in range(self.output_units)]
 
         # feed forward the hidden layer
         for i in range(self.hidden_units):
-            for j in range(self.input_unit):
+            for j in range(self.input_units):
                 hidden_res[i] += self.weights['hidden'][i][j] * instance[j]
-            hidden_res[i] += self.weights['hidden'][i][self.input_unit] # bias
+            hidden_res[i] += self.weights['hidden'][i][self.input_units] # bias
 
         self.hidden_res = [self.sigmoid(x) for x in hidden_res]
 
         # feed forward the output layer
-        for i in range(self.output_unit):
+        for i in range(self.output_units):
             for j in range(self.hidden_units):
                 output_res[i] += self.weights['output'][i][j] * self.hidden_res[j]
             output_res[i] += self.weights['output'][i][self.hidden_units] # bias
@@ -350,13 +352,13 @@ class ANN:
         Compute the loss for SGD
         '''
         loss = 0.0
-        for i in range(self.output_unit):
+        for i in range(self.output_units):
             loss += (target[i] - output[i]) ** 2
         loss /= 2.0
 
         return loss
 
-    # TODO: add momentum, weight decay
+    # TODO: weight decay
     def back_propagate(self, instance, output):
         '''
         Back propagate the error with momentum, weight 
@@ -364,47 +366,110 @@ class ANN:
         SGD
         '''
 
+        # prior delta update
+        deltas = {
+            'hidden': [[0.0 for _ in range(self.input_units + 1)]
+                        for _ in range(self.hidden_units)],
+            'output': [[0.0 for _ in range(self.hidden_units + 1)]
+                        for _ in range(self.output_units)]
+        }
+
         # get the target 
         target = instance[1]
+        inputs = instance[0]
 
         # compute the error for output layer
-        error = [0.0 for _ in range(self.output_unit)]
-        for i in range(self.output_unit):
+        error = [0.0 for _ in range(self.output_units)]
+        for i in range(self.output_units):
             error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i])
 
         # compute the error for hidden layer
         hidden_error = [0.0 for _ in range(self.hidden_units)]
         for i in range(self.hidden_units):
-            for j in range(self.output_unit):
+            for j in range(self.output_units):
                 hidden_error[i] += error[j] * self.weights['output'][j][i]
             hidden_error[i] *= self.d_sigmoid(self.hidden_res[i])
 
         # update the weights
-        for i in range(self.output_unit):
+        for i in range(self.output_units):
             for j in range(self.hidden_units):
-                self.weights['output'][i][j] += self.learning_rate * error[i] * self.hidden_res[j]
-            self.weights['output'][i][self.hidden_units] += self.learning_rate * error[i]
+                deltas['output'][i][j] = self.learning_rate * error[i] * self.hidden_res[j] \
+                                + self.momentum * deltas['output'][i][j]
+                self.weights['output'][i][j] += deltas['output'][i][j]
+            
+            deltas['output'][i][self.hidden_units] = self.learning_rate * error[i] \
+                                + self.momentum * deltas['output'][i][self.hidden_units]
+            self.weights['output'][i][self.hidden_units] += deltas['output'][i][self.hidden_units]
 
         for i in range(self.hidden_units):
-            for j in range(self.input_unit):
-                self.weights['hidden'][i][j] += self.learning_rate * hidden_error[i] * instance[j]
-            self.weights['hidden'][i][self.input_unit] += self.learning_rate * hidden_error[i]
-        
+            for j in range(self.input_units):
+                deltas['hidden'][i][j] = self.learning_rate * hidden_error[i] * inputs[j] \
+                                + self.momentum * deltas['hidden'][i][j]
+                self.weights['hidden'][i][j] += deltas['hidden'][i][j]
+            deltas['hidden'][i][self.input_units] = self.learning_rate * hidden_error[i] \
+                                + self.momentum * deltas['hidden'][i][self.input_units]  
+            self.weights['hidden'][i][self.input_units] += deltas['hidden'][i][self.input_units]
 
+
+
+    # TODO: add k-fold cross validation
     def train(self):
         '''
         Train the Artificial Neural Network
+        add
         '''
-        pass
+
+        # get the data
+        data = self.training
+        # shuffle the data
+        loss = 0.0
+
+        # train the network
+        for i in range(self.epochs):
+            for instance in data:
+                output = self.feed_forward(instance[0])
+                self.back_propagate(instance, output)
+                loss = self.loss(instance[1], output)
+
+            if self.debug:
+                print('Epoch: ', i)
+                # print('Weights: ', self.weights)
+                print('Loss: ', loss)
+
+        # save the weights
+        self.save()
 
 
     def test(self, test_data=None):
         '''
         Test the Artificial Neural Network
         '''
-        # null check
+        # get the data, null check  
         test_data = test_data or self.testing
         
         if self.debug:
             print('Testing data: ', test_data)
+
+        accuracy = 0.0
+
+        # test the network
+        for instance in test_data:
+            output = self.feed_forward(instance[0])
+            print('Output: ', output)
+            print('Target: ', instance[1])
+            print('Loss: ', self.loss(instance[1], output))
+            if output == instance[1]:
+                accuracy += 1.0
+
+        accuracy /= len(test_data)
+
+        if self.debug:
+            print('Accuracy: ', accuracy * 100, '%')
+        
+        return accuracy
+ 
+
+
+
+        
 
