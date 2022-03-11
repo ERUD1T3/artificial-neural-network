@@ -77,7 +77,7 @@ def parse_args():
     )
 
     parser.add_argument(
-        'g','--decay',
+        '-g','--decay',
         type=float, 
         required=False,
         default=0.0,
@@ -113,6 +113,7 @@ def main():
     lr = args.learning_rate
     decay = args.decay
     momentum = args.momentum
+    validation = True
 
 
     # create the artificial neural network
@@ -120,11 +121,13 @@ def main():
         training_path,
         testing_path,
         attributes_path,
+        weights_path,
         hidden_units,
         lr,
         epochs,
         momentum,
         decay,
+        validation,
         debugging
     )
 
@@ -137,20 +140,20 @@ def main():
     # test the artificial neural network
     ann.test()
     
-    # # save the weights
-    # if weights_path:
-    #     ann.save(weights_path)
-    #     print('weights saved to', weights_path)
-    #     # load the weights
-    #     ann.load(weights_path)
-    #     print('weights loaded from', weights_path)
+    # save the weights
+    if weights_path:
+        ann.save(weights_path)
+        print('weights saved to', weights_path)
+        # load the weights
+        ann.load(weights_path)
+        print('weights loaded from', weights_path)
 
 
-    # # feed forward
-    # inferance = ann.feed_forward(ann.training[0][0])
-    # print('inference', inferance)
-    # # decode the output
-    # print('decoded output', ann.decode(ann.attribute[ann.out_attr[0]],inferance))
+    # feed forward
+    inferance = ann.feed_forward(ann.training[0][0])
+    print('inference', inferance)
+    # decode the output
+    print('decoded output', ann.decode(ann.out_attr[0],inferance))
 
 
 

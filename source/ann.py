@@ -13,8 +13,6 @@
 #   - momentum
 #############################################################
 
-from distutils.log import error
-import errno
 import math
 
 class ANN:
@@ -27,12 +25,14 @@ class ANN:
         training,
         testing,
         attributes,
+        weights_path,
         hidden_units, 
         lr, 
         epochs,
         momentum, 
         decay,
-        debug=True
+        validation=False,
+        debug=True,
     ) -> None:
         
         '''
@@ -42,12 +42,13 @@ class ANN:
 
         # hyperparameters
         self.hidden_units = hidden_units
-        self.lr = lr
+        self.learning_rate = lr
         self.momentum = momentum
         self.decay = decay
         self.debug = debug
         self.epochs = epochs
         self.INIT_VAL = 0.01 # initial value for weights and biases
+        self.weights_path = weights_path
     
         # reading attributes 
         self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes) 
@@ -75,6 +76,15 @@ class ANN:
         # reading data
         self.training = self.read_data(training)
         self.testing = self.read_data(testing)
+        self.n_examples = len(self.training)
+
+        # if validation is true, then we will use the validation set
+        if validation:
+            # extract 20% of training set for validation
+            cutoff = int(self.n_examples * 0.30) # sensistive to size of validation set
+            self.validation = self.training[:cutoff]
+            self.training = self.training[cutoff:]
+            self.n_examples = len(self.training)
 
         # case of discrete attributes
         # if len(self.out_attr) == 1 \
@@ -97,7 +107,7 @@ class ANN:
             print('Attributes: ', self.attributes)
             print('Input attributes: ', self.in_attr)
             print('Output attributes: ', self.out_attr)
-            print('learning rate: ', self.lr)
+            print('learning rate: ', self.learning_rate)
             print('momentum: ', self.momentum)
             print('epochs: ', self.epochs)
             print('Weights: ', self.weights)
@@ -131,10 +141,13 @@ class ANN:
         self.print_topology()
         self.print_weights()
 
-    def save(self, filename):
+    def save(self, filename=None):
         '''
         Save the Artificial Neural Network
         '''
+        # if no filename is provided, then use the default
+        if filename is None:
+            filename = self.weights_path
         # save the weights onto a file
         with open(filename, 'w') as f:
             f.write(str(self.weights))
@@ -296,16 +309,26 @@ class ANN:
 
         return encoded
 
-    # TODO: fix this function
     def decode(self, attr, encoded):
         '''
         Decode the encoded value
         '''
         # get the index of the value
-        value = self.attributes[attr][encoded.index(1.0)]
+        # value = self.attributes[attr][encoded.index(1.0)]
+        if self.debug:
+            print('Encoded: ', encoded)
+            print('attr: ', attr)
+            print('Attributes: ', self.attributes[attr])
+        value_encoded = zip(self.attributes[attr], encoded)
+        # sort the encoded value
+        sorted_encoded = sorted(value_encoded, key=lambda x: x[1], reverse=True)
+
+        # get the value
+        value = sorted_encoded[0][0]
 
         if self.debug:
             print('Decoded: ', value)
+            print('Sorted encoded: ', sorted_encoded)
 
         return value
 
@@ -356,9 +379,21 @@ class ANN:
             loss += (target[i] - output[i]) ** 2
         loss /= 2.0
 
+        weights_term = 0.0
+
+        # adding all the weights
+        for i in range(self.hidden_units):
+            for j in range(self.input_units + 1):
+                weights_term += self.weights['hidden'][i][j] ** 2
+
+        for i in range(self.output_units):
+            for j in range(self.hidden_units + 1):
+                weights_term += self.weights['output'][i][j] ** 2
+
+        loss += self.decay * weights_term
+
         return loss
 
-    # TODO: weight decay
     def back_propagate(self, instance, output):
         '''
         Back propagate the error with momentum, weight 
@@ -381,7 +416,8 @@ class ANN:
         # compute the error for output layer
         error = [0.0 for _ in range(self.output_units)]
         for i in range(self.output_units):
-            error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i])
+            error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i]) \
+                + 2.0 * self.decay * self.weights['output'][i][self.hidden_units]
 
         # compute the error for hidden layer
         hidden_error = [0.0 for _ in range(self.hidden_units)]
@@ -435,6 +471,23 @@ class ANN:
                 print('Epoch: ', i)
                 # print('Weights: ', self.weights)
                 print('Loss: ', loss)
+
+            # get validation data
+            validation = self.validation
+            # compute the validation loss
+            validation_loss = 0.0
+            for instance in validation:
+                output = self.feed_forward(instance[0])
+                validation_loss += self.loss(instance[1], output)
+
+            if self.debug:
+                print('Validation Loss: ', validation_loss)
+
+            # check if the loss is decreasing
+            if validation_loss > loss:
+                break
+
+            
 
         # save the weights
         self.save()
