@@ -113,7 +113,7 @@ def main():
     lr = args.learning_rate
     decay = args.decay
     momentum = args.momentum
-    validation = True
+    validation = False
 
 
     # create the artificial neural network
@@ -141,19 +141,19 @@ def main():
     ann.test()
     
     # save the weights
-    if weights_path:
-        ann.save(weights_path)
-        print('weights saved to', weights_path)
-        # load the weights
-        ann.load(weights_path)
-        print('weights loaded from', weights_path)
+    # if weights_path:
+    #     ann.save(weights_path)
+    #     print('weights saved to', weights_path)
+    #     # load the weights
+    #     ann.load(weights_path)
+    #     print('weights loaded from', weights_path)
 
 
-    # feed forward
-    inferance = ann.feed_forward(ann.training[0][0])
-    print('inference', inferance)
-    # decode the output
-    print('decoded output', ann.decode(ann.out_attr[0],inferance))
+    # # feed forward
+    # inferance = ann.feed_forward(ann.training[0][0])
+    # print('inference', inferance)
+    # # decode the output
+    # print('decoded output', ann.decode(ann.out_attr[0],inferance))
 
 
 

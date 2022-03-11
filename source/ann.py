@@ -39,7 +39,7 @@ class ANN:
         Initialize the Artificial Neural Network
         '''
         self.topology = None # ideally dynamically generated
-
+        self.validation = []
         # hyperparameters
         self.hidden_units = hidden_units
         self.learning_rate = lr
@@ -211,9 +211,9 @@ class ANN:
         '''
         values = self.attributes[attr]
 
-        if self.debug:
-            print('values: ', values)
-            print('the attribute to encode is: ', attr)
+        # if self.debug:
+        #     print('values: ', values)
+        #     print('the attribute to encode is: ', attr)
 
         if len(values) > 1:
             if values[0] == '0' and values[1] == '1':
@@ -459,40 +459,46 @@ class ANN:
         data = self.training
         # shuffle the data
         loss = 0.0
+        # get validation data
+        validation = self.validation
 
         # train the network
         for i in range(self.epochs):
+
+            if self.debug:
+                print('Epoch: ', i)
+
             for instance in data:
                 output = self.feed_forward(instance[0])
                 self.back_propagate(instance, output)
                 loss = self.loss(instance[1], output)
+                
+                if self.debug:
+                    # print('Weights: ', self.weights)
+                    print('Loss: ', loss)
+                
+                # compute the validation loss
+                validation_loss = 0.0
+                for instance in validation:
+                    output = self.feed_forward(instance[0])
+                    validation_loss += self.loss(instance[1], output)
 
-            if self.debug:
-                print('Epoch: ', i)
-                # print('Weights: ', self.weights)
-                print('Loss: ', loss)
+                # if self.debug:
+                #     print('Validation Loss: ', validation_loss/len(validation))
 
-            # get validation data
-            validation = self.validation
-            # compute the validation loss
-            validation_loss = 0.0
-            for instance in validation:
-                output = self.feed_forward(instance[0])
-                validation_loss += self.loss(instance[1], output)
+                # check if the loss is decreasing
+                if validation_loss > loss:
+                    break
 
-            if self.debug:
-                print('Validation Loss: ', validation_loss)
+           
 
-            # check if the loss is decreasing
-            if validation_loss > loss:
-                break
-
+            
             
 
         # save the weights
         self.save()
 
-
+    # TODO: test this function
     def test(self, test_data=None):
         '''
         Test the Artificial Neural Network
