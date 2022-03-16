@@ -1,6 +1,3 @@
-# artificial-neural-network
-repo for an implementation of artificial neural network from scratch
-
 This is an implementation of neural network with support for momentum, weight decay, and k-fold crossvalidation. The necessary files are the following 
     main.py            (main file with options)
     ann.py             (dependency for all neural net functionalities)
@@ -14,7 +11,7 @@ This is an implementation of neural network with support for momentum, weight de
 No need to compile since the Python files are interpreted
 
 To run the tree with options, use the following command example:
-```
+
 $ python source/main.py \
 -a data/identity/identity-attr.txt \
 -d data/identity/identity-train.txt \
@@ -27,7 +24,7 @@ $ python source/main.py \
 -m 0.0 \
 -g 0.0 \
 --debug
-```
+
 where python3 is the python 3.X.X interpreter, 
     optional arguments:
     -a ATTRIBUTES, --attributes ATTRIBUTES
@@ -52,17 +49,15 @@ where python3 is the python 3.X.X interpreter,
                             weight decay gamma (default: 0.01)
     --debug               debug mode, prints statements activated (optional)
 To find out about the options, use:
-```
 $ python3 main.py -h 
-```
 
 To run the different experiment files, use the following  command:
-```
+
 $ python3 testIdentity.py
 $ python3 testTennis.py 
 $ python3 testIris.py
 $ python3 testIrisNoisy.py
-```
+
 where python3 is the python 3.X.X interpreter, and provided the data files are present 
 and in the same directory as the experiment files
 
