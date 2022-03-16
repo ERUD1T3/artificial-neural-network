@@ -47,7 +47,7 @@ class ANN:
         self.decay = decay
         self.debug = debug
         self.epochs = epochs
-        self.INIT_VAL = 0.01 # initial value for weights and biases
+        self.INIT_VAL = 0.0 # initial value for weights and biases
         self.weights_path = weights_path
     
         # reading attributes 
@@ -413,6 +413,11 @@ class ANN:
         target = instance[1]
         inputs = instance[0]
 
+        if self.debug:
+            print('inputs: ', inputs)
+            print('Target: ', target)
+            print('Output: ', output)
+
         # compute the error for output layer
         error = [0.0 for _ in range(self.output_units)]
         for i in range(self.output_units):
@@ -471,28 +476,32 @@ class ANN:
             for instance in data:
                 output = self.feed_forward(instance[0])
                 self.back_propagate(instance, output)
-                loss = self.loss(instance[1], output)
+                loss += self.loss(instance[1], output)
                 
-                if self.debug:
-                    # print('Weights: ', self.weights)
-                    print('Loss: ', loss)
+               
                 
                 # compute the validation loss
-                validation_loss = 0.0
-                for instance in validation:
-                    output = self.feed_forward(instance[0])
-                    validation_loss += self.loss(instance[1], output)
+                # validation_loss = 0.0
+                # for instance in validation:
+                #     output = self.feed_forward(instance[0])
+                #     validation_loss += self.loss(instance[1], output)
 
-                # if self.debug:
-                #     print('Validation Loss: ', validation_loss/len(validation))
+                # # if self.debug:
+                # #     print('Validation Loss: ', validation_loss/len(validation))
 
-                # check if the loss is decreasing
-                if validation_loss > loss:
-                    break
+                # # check if the loss is decreasing
+                # if validation_loss > loss:
+                #     break
 
+            if self.debug:
+                # print('Weights: ', self.weights)
+                print('Loss: ', loss/len(data))
            
-
+            # if loss/len(data) < 1:
+            #     break
             
+            # if loss/len(data) < 5:
+            #     break
             
 
         # save the weights

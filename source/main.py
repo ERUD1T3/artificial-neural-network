@@ -138,7 +138,7 @@ def main():
     ann.train()
 
     # test the artificial neural network
-    ann.test()
+    # ann.test()
     
     # save the weights
     # if weights_path:
