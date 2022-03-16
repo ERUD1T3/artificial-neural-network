@@ -48,7 +48,7 @@ class ANN:
         self.decay = decay
         self.debug = debug
         self.epochs = epochs
-        self.INIT_VAL = 0.0 # initial value for weights and biases
+        self.INIT_VAL = 0.01 # initial value for weights and biases
         self.OFFSET = .05 # offset for early stopping
         self.weights_path = weights_path
     
@@ -255,7 +255,7 @@ class ANN:
                     # check if the encoding should be applied
                     # when encoding applied, update the input or output units sizes
 
-                    data.append((In, Out))
+                    data.append([In, Out])
                     
                     
         # if self.debug:
@@ -691,7 +691,20 @@ class ANN:
         return accuracy
  
 
+    def get_classes(self):
+        '''
+        Get the output classes
+        '''
+        
+        num_out = self.output_units
+        classes = [
+            [0.0 for i in range(num_out)] for j in range(num_out)
+        ]
 
+        for i in range(num_out):
+            classes[i][i] = 1.0
+        
+        return classes
 
         
 

@@ -1,60 +1,83 @@
 ############################################################
 #   Dev: Josias Moukpe
 #   Class: Machine Learning
-#   Date: 2/23/2022
-#   file: ann.py
-#   Description: main class for artificial neural network
+#   Date: 3/16/2022
+#   file: testTennis.py
+#   Description: main file to run the program for Iris dataset 
+#   testIris: output accuracy on training and test sets.
 #############################################################
 
+# imports
 from ann import ANN
+
 
 def main():
     '''main of the program'''
 
+
     training_path = 'data/iris/iris-train.txt'
     testing_path = 'data/iris/iris-test.txt'
     attributes_path = 'data/iris/iris-attr.txt'
+    weights_path = 'iris_weights.txt'
     debugging = False
-
-
-    print('\nLearning the decision tree...\n')
-    # run the program
-    dtl = Learner(attributes_path, training_path, testing_path, debugging)
-    tree = dtl.learn()
-
-    print('\nPrinting the decision tree...\n')
-    tree.print_tree()
-
-    print('\nTesting the tree on training data\n')
-    # testing tree on training data
-    training_acc = dtl.test(tree, dtl.training)
-    print('\nTraining accuracy: ', training_acc)
-
-    print('\nTesting the tree on testing data\n')
-    # testing tree on test data
-    testing_acc = dtl.test(tree, dtl.testing)
-    print('\nTesting accuracy: ', testing_acc)
-
-    print('\nPrinting the decision tree rules\n')
-    # print the rules
-    dtl.tree_to_rules(tree)    
-    tree.print_rules()
     
-    print('\nPruning the tree...\n')
-    # prune the tree
-    dtl.rule_post_pruning(tree, dtl.testing)
-    tree.rules = consolidate_rules(tree.rules)
-    tree.print_rules()
+    # hyperparameters
+    hidden_units = 6
+    epochs = 5000
+    learning_rate = .01
+    decay = 0.0
+    momentum = 0.0
+    k_folds = 5
 
-    print('\nTesting the rules on training data\n')
-    # testing tree on test data
-    training_acc = dtl.test(tree, dtl.training)
-    print('\nTraining accuracy: ', training_acc)
 
-    print('\nTesting the rules on testing data\n')
-    # testing tree on test data
-    testing_acc = dtl.test(tree, dtl.testing)
-    print('\nTesting accuracy: ', testing_acc)
+    print('\nCreating NN with the parameters provided\n')
+    # create the artificial neural network
+    ann = ANN(
+        training_path, # path to training data
+        testing_path, # path to testing data
+        attributes_path, # path to attributes
+        k_folds, # whether to use validation data
+        weights_path, # path to save weights
+        hidden_units, # number of hidden units
+        learning_rate, # learning rate
+        epochs, # number of epochs, -1 for stopping based on validation
+        momentum, # momentum
+        decay, # weight decay gamma
+        debugging # whether to print debugging statements
+    )
+    # printing the neural network
+    ann.print_network()
+
+
+    print('\nLearning the NN...\n')
+    # train the artificial neural network
+    ann.train()
+    print('\nTraining complete\n')
+
+    #print weights
+    print('\nPrinting learned weights\n')
+    ann.print_weights()
+
+    # save the weights
+    if weights_path:
+        ann.save(weights_path)
+        print('weights saved to', weights_path)
+        
+        # load the weights
+        # ann.load(weights_path)
+        # print('weights loaded from', weights_path)
+
+    # test the artificial neural network
+    print('\nTesting the NN on training set ...\n')
+    accuracy = ann.test(ann.training) * 100
+    print('\nTraining set accuracy:', accuracy)
+
+    # test the artificial neural network
+    print('\nTesting the NN on testing set ...\n')
+    accuracy = ann.test(ann.testing) * 100
+    print('\nTesting set accuracy:', accuracy)
+
+    print('\nTesting complete\n')
 
 
     
