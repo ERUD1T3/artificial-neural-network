@@ -39,10 +39,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        '-v', '--validation',
-        action='store_true',
-        default=False,
-        help='whether to use validation data (default: False)'
+        '-k', '--k-fold',
+        type=int,
+        required=False,
+        help='number of folds for k-fold cross validation, k=0 or k=1 for no validation'
     )
 
     parser.add_argument(
@@ -72,7 +72,7 @@ def parse_args():
         type=float, 
         required=False,
         default=0.1,
-        help='learning rate (default: 0.1)',
+        help='learning rate (default: 0.01)',
     )
 
     parser.add_argument(
@@ -120,7 +120,7 @@ def main():
     learning_rate = args.learning_rate
     decay = args.decay
     momentum = args.momentum
-    validation = args.validation
+    k_folds = args.k_fold
 
 
     print('\nCreating NN with the parameters provided\n')
@@ -129,7 +129,7 @@ def main():
         training_path, # path to training data
         testing_path, # path to testing data
         attributes_path, # path to attributes
-        validation, # whether to use validation data
+        k_folds, # whether to use validation data
         weights_path, # path to save weights
         hidden_units, # number of hidden units
         learning_rate, # learning rate

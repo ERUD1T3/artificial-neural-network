@@ -14,6 +14,7 @@
 #############################################################
 
 import math
+import random
 
 class ANN:
     '''
@@ -25,7 +26,7 @@ class ANN:
         training,
         testing,
         attributes,
-        validation,
+        k_fold,
         weights_path,
         hidden_units, 
         learning_rate, 
@@ -39,7 +40,7 @@ class ANN:
         Initialize the Artificial Neural Network
         '''
         self.topology = None # ideally dynamically generated
-        self.validation = []
+        self.k_fold = k_fold
         # hyperparameters
         self.hidden_units = hidden_units
         self.learning_rate = learning_rate
@@ -48,6 +49,7 @@ class ANN:
         self.debug = debug
         self.epochs = epochs
         self.INIT_VAL = 0.0 # initial value for weights and biases
+        self.OFFSET = .5 # offset for early stopping
         self.weights_path = weights_path
     
         # reading attributes 
@@ -77,20 +79,6 @@ class ANN:
         self.training = self.read_data(training)
         self.testing = self.read_data(testing)
         self.n_examples = len(self.training)
-
-        # if validation is true, then we will use the validation set
-        if validation:
-            # extract 20% of training set for validation
-            cutoff = int(self.n_examples * 0.30) # sensistive to size of validation set
-            self.validation = self.training[:cutoff]
-            self.training = self.training[cutoff:]
-            self.n_examples = len(self.training)
-
-        # case of discrete attributes
-        # if len(self.out_attr) == 1 \
-        #     and len(self.attributes[self.out_attr[0]]) > 1:
-        #     self.output_units = len(self.attributes[self.out_attr[0]])
-
 
         # initialize the weights
         self.weights = {
@@ -298,7 +286,6 @@ class ANN:
         # input output pairs are 
         # ([a, b, c, d, e, f, g, h, i, j], [x,y]), ...]
         # return instance
-    
 
         # get the index of the value
         encoded = [0.0 for _ in range(len(self.attributes[attr]))]
@@ -373,7 +360,8 @@ class ANN:
     def predict(self, line_instance):
         '''
         Predict the output of the instance
-
+        later update to include processing of discrete input 
+        and output
         '''
 
         # items = line_instance.strip().split()
@@ -495,60 +483,147 @@ class ANN:
             self.weights['hidden'][i][self.input_units] += deltas['hidden'][i][self.input_units]
 
 
-
-    # TODO: add k-fold cross validation
-    def train(self):
+    def train(self, train_data=None):
         '''
         Train the Artificial Neural Network
-        add
+        k is the number of folds
         '''
 
         # get the data
-        data = self.training
-        # shuffle the data
-        loss = 0.0
-        # get validation data
-        validation = self.validation
+        data = train_data or self.training
 
-        # train the network
-        for i in range(self.epochs):
+        k = self.k_fold
+
+        if k > 1:
+            
+            # randomly shuffle the data into folds 
+            random.shuffle(data)
+            
+            # get the number of instances
+            num_instances = len(data)
+
+            # get number of data per fold
+            fold_size = num_instances // k
+
+            # get the folds
+            folds = [
+                data[i:i+fold_size] for i in range(0, num_instances, fold_size)
+            ]
+
+            # scores for each fold
+            scores = []
+            iterations = []
+
+            for i in range(k):
+
+                if self.debug:
+                    print('Fold: ', i)
+
+                # get the test fold
+                test_fold = folds[i]
+                # get the train folds
+                train_folds = folds[:i] + folds[i+1:]
+                # get the train data
+                train_data = [item for sublist in train_folds for item in sublist]
+                # get the test data
+                validation_data = [item for sublist in test_fold for item in sublist]
+
+                best_validation_loss, e = float('inf'), 0
+
+                for i in range(self.epochs):
+                    
+                    # get the loss for training data
+                    # train the network
+                    train_loss = 0.0
+                    validation_loss = 0.0
+
+                    if self.debug:
+                        print('Epoch: ', i, end='')
+
+                    # shuffle the data
+                    random.shuffle(train_data)
+                    
+                    for instance in train_data:
+                        # get the output
+                        output = self.feed_forward(instance)
+                        # compute the loss
+                        train_loss += self.loss(instance[1], output)
+                        # back propagate the error
+                        self.back_propagate(instance, output)
+    
+
+                    for instance in validation_data:
+                        # get the output
+                        output = self.feed_forward(instance)
+                        # compute the loss
+                        validation_loss += self.loss(instance[1], output)
+
+
+                    v_loss = validation_loss/len(validation_data)
+                    t_loss = train_loss/len(train_data)
+
+                    if self.debug:
+                        print('\tTrain Loss: ', t_loss, '\tValidation Loss: ', v_loss)
+
+                    if v_loss < best_validation_loss:
+                        best_validation_loss, e = v_loss, i
+                    elif v_loss > self.OFFSET + best_validation_loss:
+                        scores.append(best_validation_loss)
+                        iterations.append(e)
+                        break
+
+            # get the average score
+            avg_score = sum(scores) / len(scores)
+            avg_iter = sum(iterations) / len(iterations)
 
             if self.debug:
-                print('Epoch: ', i)
-
-            for instance in data:
-                output = self.feed_forward(instance[0])
-                self.back_propagate(instance, output)
-                loss += self.loss(instance[1], output)
-                
-               
-                
-                # compute the validation loss
-                # validation_loss = 0.0
-                # for instance in validation:
-                #     output = self.feed_forward(instance[0])
-                #     validation_loss += self.loss(instance[1], output)
-
-                # # if self.debug:
-                # #     print('Validation Loss: ', validation_loss/len(validation))
-
-                # # check if the loss is decreasing
-                # if validation_loss > loss:
-                #     break
-
-            if self.debug:
-                # print('Weights: ', self.weights)
-                print('Loss: ', loss/len(data))
-           
-            # if loss/len(data) < 1:
-            #     break
+                print('Average Score: ', avg_score, '\tAverage Iterations: ', avg_iter)
             
-            # if loss/len(data) < 5:
-            #     break
-            
+            # train net with average iterations
+            for i in range(avg_iter):
+                loss = 0.0
 
-        # save the weights
-        # self.save()
+                for instance in data:
+                    # get the output
+                    output = self.feed_forward(instance)
+                    # compute the loss
+                    loss += self.loss(instance[1], output)
+                    # back propagate the error
+                    self.back_propagate(instance, output)
+
+                if self.debug:
+                    # print('Weights: ', self.weights)
+                    print('Loss: ', loss/len(data), end='\n')
+
+        else:
+
+            # shuffle the data
+            random.shuffle(data)
+
+            # train the network
+            for i in range(self.epochs):
+
+                loss = 0.0
+
+                if self.debug:
+                    print('Epoch: ', i, end='')
+
+                for instance in data:
+
+                    # get the output
+                    output = self.feed_forward(instance[0])
+                    # get the loss per instance
+                    loss += self.loss(instance[1], output)
+                    # update the weights
+                    self.back_propagate(instance, output)
+                    
+                if self.debug:
+                    # print('Weights: ', self.weights)
+                    print('Loss: ', loss/len(data), end='\n')
+
+            # save the weights
+            # if self.weights_path:
+            #     self.save()
 
 
     def test(self, test_data=None):
@@ -565,14 +640,15 @@ class ANN:
 
         # test the network
         for instance in test_data:
+            # get the output
             output = self.feed_forward(instance[0])
-            print('Output: ', output)
-            print('Target: ', instance[1])
-            print('Loss: ', self.loss(instance[1], output))
 
-            # check check how correct is the output
-            # if output == instance[1]:
-            #     accuracy += 1.0
+            if self.debug:
+                print('Output: ', output)
+                print('Target: ', instance[1])
+                print('Loss: ', self.loss(instance[1], output))
+            
+            # check if the output is correct
             accuracy += 1.0 - self.loss(instance[1], output)
 
         accuracy /= len(test_data)
