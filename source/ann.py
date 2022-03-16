@@ -323,7 +323,12 @@ class ANN:
         '''
         Sigmoid activation function
         '''
-        return 1 / (1 + math.exp(-x))
+        # print('bad x:', x)
+        try :
+            return 1 / (1 + math.exp(-x))
+        except OverflowError:
+            return 0.0
+        # return 1 / (1 + math.exp(-x))
 
     def d_sigmoid(self, x):
         '''
@@ -336,6 +341,8 @@ class ANN:
         '''
         Feed forward the Artificial Neural Network
         '''
+
+
         hidden_res = [0.0 for _ in range(self.hidden_units)]
         output_res = [0.0 for _ in range(self.output_units)]
 
@@ -441,10 +448,10 @@ class ANN:
         target = instance[1]
         inputs = instance[0]
 
-        if self.debug:
-            print('inputs: ', inputs)
-            print('Target: ', target)
-            print('Output: ', output)
+        # if self.debug:
+        #     print('inputs: ', inputs)
+        #     print('Target: ', target)
+        #     print('Output: ', output)
 
         # compute the error for output layer
         error = [0.0 for _ in range(self.output_units)]
@@ -502,6 +509,14 @@ class ANN:
             # get the number of instances
             num_instances = len(data)
 
+            while num_instances < k:
+                data = data * k
+                # get the number of instances
+                num_instances = len(data)
+
+            # if self.debug:
+            #     print('data: ', data)
+
             # get number of data per fold
             fold_size = num_instances // k
 
@@ -523,10 +538,20 @@ class ANN:
                 test_fold = folds[i]
                 # get the train folds
                 train_folds = folds[:i] + folds[i+1:]
+
+                # merge train folds
+                train_fold = []
+                for fold in train_folds:
+                    train_fold += fold
+
+                # if self.debug:
+                #     print('Test Fold: ', test_fold)
+                #     print('Train Folds: ', train_fold)
+
                 # get the train data
-                train_data = [item for sublist in train_folds for item in sublist]
+                train_data = train_fold
                 # get the test data
-                validation_data = [item for sublist in test_fold for item in sublist]
+                validation_data = test_fold
 
                 best_validation_loss, e = float('inf'), 0
 
@@ -545,16 +570,20 @@ class ANN:
                     
                     for instance in train_data:
                         # get the output
-                        output = self.feed_forward(instance)
+                        # print(instance[0])
+                        output = self.feed_forward(instance[0])
                         # compute the loss
                         train_loss += self.loss(instance[1], output)
                         # back propagate the error
                         self.back_propagate(instance, output)
     
+                    # if self.debug:
+                    #     # print validation data
+                    #     print('validation: ', validation_data)
 
                     for instance in validation_data:
                         # get the output
-                        output = self.feed_forward(instance)
+                        output = self.feed_forward(instance[0])
                         # compute the loss
                         validation_loss += self.loss(instance[1], output)
 
@@ -580,12 +609,12 @@ class ANN:
                 print('Average Score: ', avg_score, '\tAverage Iterations: ', avg_iter)
             
             # train net with average iterations
-            for i in range(avg_iter):
+            for i in range(int(avg_iter)):
                 loss = 0.0
 
                 for instance in data:
                     # get the output
-                    output = self.feed_forward(instance)
+                    output = self.feed_forward(instance[0])
                     # compute the loss
                     loss += self.loss(instance[1], output)
                     # back propagate the error
