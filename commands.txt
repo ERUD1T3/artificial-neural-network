@@ -24,15 +24,4 @@ python source/main.py \
 -g 0.0 \
 --debug
 
-python source/main.py \
--a data/tennis/tennis-attr.txt \
--d data/tennis/tennis-train.txt \
--t data/tennis/tennis-test.txt \
--k 10 \
--w models/weights.txt \
--u 3 \
--e 100 \
--l 1e-3 \
--m 0.0 \
--g 0.0 \
---debug
+python source/main.py -a data/tennis/tennis-attr.txt -d data/tennis/tennis-train.txt -t data/tennis/tennis-test.txt -k 5 -w models/weights.txt -u 3 -e 6000 -l 1e-3 -m 0.05 -g 0.0 --debug

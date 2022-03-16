@@ -49,7 +49,7 @@ class ANN:
         self.debug = debug
         self.epochs = epochs
         self.INIT_VAL = 0.0 # initial value for weights and biases
-        self.OFFSET = .1 # offset for early stopping
+        self.OFFSET = .05 # offset for early stopping
         self.weights_path = weights_path
     
         # reading attributes 
@@ -594,12 +594,15 @@ class ANN:
                     if self.debug:
                         print('\tTrain Loss: ', t_loss, '\tValidation Loss: ', v_loss)
 
-                    if v_loss < best_validation_loss:
+                    if i == 0 or v_loss < best_validation_loss:
                         best_validation_loss, e = v_loss, i
                     elif v_loss > self.OFFSET + best_validation_loss:
                         scores.append(best_validation_loss)
                         iterations.append(e)
                         break
+                    elif i == self.epochs - 1:
+                        scores.append(best_validation_loss)
+                        iterations.append(e)
 
             # get the average score
             avg_score = sum(scores) / len(scores)
