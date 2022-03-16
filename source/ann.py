@@ -665,8 +665,8 @@ class ANN:
         # get the data, null check  
         test_data = test_data or self.testing
         
-        if self.debug:
-            print('Testing data: ', test_data)
+        # if self.debug:
+        #     print('Testing data: ', test_data)
 
         accuracy = 0.0
 
@@ -676,9 +676,12 @@ class ANN:
             output = self.feed_forward(instance[0])
 
             if self.debug:
+                print('hidden results: ', self.hidden_res, end='\n')
+
+            if self.debug:
                 print('Output: ', output)
                 print('Target: ', instance[1])
-                print('Loss: ', self.loss(instance[1], output))
+                print('Loss: ', self.loss(instance[1], output), end='\n')
             
             # check if the output is correct
             accuracy += 1.0 - self.loss(instance[1], output)

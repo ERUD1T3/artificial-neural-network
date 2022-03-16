@@ -21,18 +21,18 @@ from ann import ANN
 def main():
     '''main of the program'''
 
-    training_path = 'data/identity/itentity-train.txt'
-    testing_path = 'data/identity/identity-test.txt'
+    training_path = 'data/identity/identity-train.txt'
+    testing_path = 'data/identity/identity-train.txt'
     attributes_path = 'data/identity/identity-attr.txt'
     weights_path = 'identity_weights.txt'
     debugging = False
     
     # hyperparameters
     epochs = 5000
-    learning_rate = 1e-3
-    decay = 0.001
-    momentum = 0.09
-    k_folds = 3
+    learning_rate = .01
+    decay = 0.0
+    momentum = 0.0
+    k_folds = 10
 
     hidden_units = 3
 
@@ -74,16 +74,9 @@ def main():
         # print('weights loaded from', weights_path)
 
     # test the artificial neural network
-    print('\nTesting the NN on training set ...\n')
-    accuracy = ann3.test(ann3.training) * 100
-    print('\nTraining set accuracy:', accuracy)
-
-    # test the artificial neural network
+    ann3.debug = True
     print('\nTesting the NN on testing set ...\n')
-    accuracy = ann3.test(ann3.testing) * 100
-    print('\nTesting set accuracy:', accuracy)
-
-    print('\nTesting complete\n')
+    ann3.test()
 
 
     hidden_units = 4
@@ -125,17 +118,10 @@ def main():
         # ann.load(weights_path)
         # print('weights loaded from', weights_path)
 
-    # test the artificial neural network
-    print('\nTesting the NN on training set ...\n')
-    accuracy = ann4.test(ann4.training) * 100
-    print('\nTraining set accuracy:', accuracy)
-
-    # test the artificial neural network
+     # test the artificial neural network
+    ann4.debug = True
     print('\nTesting the NN on testing set ...\n')
-    accuracy = ann4.test(ann4.testing) * 100
-    print('\nTesting set accuracy:', accuracy)
-
-    print('\nTesting complete\n')
+    ann4.test()
 
 
     
