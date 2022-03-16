@@ -25,13 +25,13 @@ class ANN:
         training,
         testing,
         attributes,
+        validation,
         weights_path,
         hidden_units, 
-        lr, 
+        learning_rate, 
         epochs,
         momentum, 
         decay,
-        validation=False,
         debug=True,
     ) -> None:
         
@@ -42,7 +42,7 @@ class ANN:
         self.validation = []
         # hyperparameters
         self.hidden_units = hidden_units
-        self.learning_rate = lr
+        self.learning_rate = learning_rate
         self.momentum = momentum
         self.decay = decay
         self.debug = debug
@@ -370,22 +370,62 @@ class ANN:
 
         return output_res
 
+    def predict(self, line_instance):
+        '''
+        Predict the output of the instance
+
+        '''
+
+        # items = line_instance.strip().split()
+
+        # if self.debug:
+        #     print('Items: ', items)
+
+        # get items iterator
+        # items_iter = iter(items)
+
+        # instance = []
+        # # get inputs
+        # for attr in self.in_attr:
+        #     value = next(items_iter)
+        #     if self.to_encode(attr):
+        #         # encode discrete values
+        #         encoded = self.onehot(attr, value)
+        #         instance += encoded # since encoded is a list
+        #     else:
+        #         # encode continuous values
+        #         instance.append(float(value))
+
+        # feed forward the network
+        # output_res = self.feed_forward(instance)
+
+        # get the index of the max value
+        # max_index = output_res.index(max(output_res))
+
+        # # get the value of the max value
+        # for attr in self.out_attr:
+
+        # max_value = self.decode(self.out_attr[max_index], output_res)
+
+        # return max_value
+
+        return self.feed_forward(line_instance)
+
     def loss(self, target, output):
         '''
         Compute the loss for SGD
         '''
         loss = 0.0
+        # getting all the loss
         for i in range(self.output_units):
             loss += (target[i] - output[i]) ** 2
         loss /= 2.0
 
         weights_term = 0.0
-
         # adding all the weights
         for i in range(self.hidden_units):
             for j in range(self.input_units + 1):
                 weights_term += self.weights['hidden'][i][j] ** 2
-
         for i in range(self.output_units):
             for j in range(self.hidden_units + 1):
                 weights_term += self.weights['output'][i][j] ** 2
@@ -421,8 +461,7 @@ class ANN:
         # compute the error for output layer
         error = [0.0 for _ in range(self.output_units)]
         for i in range(self.output_units):
-            error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i]) \
-                + 2.0 * self.decay * self.weights['output'][i][self.hidden_units]
+            error[i] = (target[i] - output[i]) * self.d_sigmoid(output[i]) 
 
         # compute the error for hidden layer
         hidden_error = [0.0 for _ in range(self.hidden_units)]
@@ -431,23 +470,27 @@ class ANN:
                 hidden_error[i] += error[j] * self.weights['output'][j][i]
             hidden_error[i] *= self.d_sigmoid(self.hidden_res[i])
 
+
+        # weight update factor based on decay
+        factor = 1 - 2 * self.learning_rate * self.decay
+
         # update the weights
         for i in range(self.output_units):
             for j in range(self.hidden_units):
-                deltas['output'][i][j] = self.learning_rate * error[i] * self.hidden_res[j] \
+                deltas['output'][i][j] = factor * error[i] * self.hidden_res[j] \
                                 + self.momentum * deltas['output'][i][j]
                 self.weights['output'][i][j] += deltas['output'][i][j]
             
-            deltas['output'][i][self.hidden_units] = self.learning_rate * error[i] \
+            deltas['output'][i][self.hidden_units] = factor * error[i] \
                                 + self.momentum * deltas['output'][i][self.hidden_units]
             self.weights['output'][i][self.hidden_units] += deltas['output'][i][self.hidden_units]
 
         for i in range(self.hidden_units):
             for j in range(self.input_units):
-                deltas['hidden'][i][j] = self.learning_rate * hidden_error[i] * inputs[j] \
+                deltas['hidden'][i][j] = factor * hidden_error[i] * inputs[j] \
                                 + self.momentum * deltas['hidden'][i][j]
                 self.weights['hidden'][i][j] += deltas['hidden'][i][j]
-            deltas['hidden'][i][self.input_units] = self.learning_rate * hidden_error[i] \
+            deltas['hidden'][i][self.input_units] = factor * hidden_error[i] \
                                 + self.momentum * deltas['hidden'][i][self.input_units]  
             self.weights['hidden'][i][self.input_units] += deltas['hidden'][i][self.input_units]
 
@@ -505,9 +548,9 @@ class ANN:
             
 
         # save the weights
-        self.save()
+        # self.save()
 
-    # TODO: test this function
+
     def test(self, test_data=None):
         '''
         Test the Artificial Neural Network
@@ -526,8 +569,11 @@ class ANN:
             print('Output: ', output)
             print('Target: ', instance[1])
             print('Loss: ', self.loss(instance[1], output))
-            if output == instance[1]:
-                accuracy += 1.0
+
+            # check check how correct is the output
+            # if output == instance[1]:
+            #     accuracy += 1.0
+            accuracy += 1.0 - self.loss(instance[1], output)
 
         accuracy /= len(test_data)
 

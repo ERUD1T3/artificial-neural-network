@@ -39,6 +39,13 @@ def parse_args():
     )
 
     parser.add_argument(
+        '-v', '--validation',
+        action='store_true',
+        default=False,
+        help='whether to use validation data (default: False)'
+    )
+
+    parser.add_argument(
         '-w', '--weights',
         type=str , 
         required=False,
@@ -73,7 +80,7 @@ def parse_args():
         type=float, 
         required=False,
         default=0.0,
-        help='momentum (default: 0.0)',
+        help='momentum (default: 0.9)',
     )
 
     parser.add_argument(
@@ -81,7 +88,7 @@ def parse_args():
         type=float, 
         required=False,
         default=0.0,
-        help='weight decay gamma (default: 0.0)',
+        help='weight decay gamma (default: 0.01)',
     )
 
     parser.add_argument(
@@ -110,51 +117,52 @@ def main():
     # hyperparameters
     hidden_units = args.hidden_units
     epochs = args.epochs
-    lr = args.learning_rate
+    learning_rate = args.learning_rate
     decay = args.decay
     momentum = args.momentum
-    validation = False
+    validation = args.validation
 
 
+    print('\nCreating NN with the parameters provided\n')
     # create the artificial neural network
     ann = ANN(
-        training_path,
-        testing_path,
-        attributes_path,
-        weights_path,
-        hidden_units,
-        lr,
-        epochs,
-        momentum,
-        decay,
-        validation,
-        debugging
+        training_path, # path to training data
+        testing_path, # path to testing data
+        attributes_path, # path to attributes
+        validation, # whether to use validation data
+        weights_path, # path to save weights
+        hidden_units, # number of hidden units
+        learning_rate, # learning rate
+        epochs, # number of epochs, -1 for stopping based on validation
+        momentum, # momentum
+        decay, # weight decay gamma
+        debugging # whether to print debugging statements
     )
-
-    # print the network
+    # printing the neural network
     ann.print_network()
 
+
+    print('\nLearning the NN...\n')
     # train the artificial neural network
     ann.train()
+    print('\nTraining complete\n')
+
+    #print weights
+    print('\nPrinting learned weights\n')
+    ann.print_weights()
+
+    # save the weights
+    if weights_path:
+        ann.save(weights_path)
+        print('weights saved to', weights_path)
+        # load the weights
+        # ann.load(weights_path)
+        # print('weights loaded from', weights_path)
 
     # test the artificial neural network
-    # ann.test()
-    
-    # save the weights
-    # if weights_path:
-    #     ann.save(weights_path)
-    #     print('weights saved to', weights_path)
-    #     # load the weights
-    #     ann.load(weights_path)
-    #     print('weights loaded from', weights_path)
-
-
-    # # feed forward
-    # inferance = ann.feed_forward(ann.training[0][0])
-    # print('inference', inferance)
-    # # decode the output
-    # print('decoded output', ann.decode(ann.out_attr[0],inferance))
-
+    print('\nTesting the NN...\n')
+    ann.test()
+    print('\nTesting complete\n')
 
 
     
