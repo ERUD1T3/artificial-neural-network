@@ -49,7 +49,7 @@ class ANN:
         self.debug = debug
         self.epochs = epochs
         self.INIT_VAL = 0.0 # initial value for weights and biases
-        self.OFFSET = .5 # offset for early stopping
+        self.OFFSET = .1 # offset for early stopping
         self.weights_path = weights_path
     
         # reading attributes 
