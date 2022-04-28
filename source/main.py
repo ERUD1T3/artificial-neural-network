@@ -8,6 +8,8 @@
 
 # imports
 import argparse
+from source.utils import Data
+from utils import Utils
 from ann import ANN
 
 def parse_args():
@@ -39,17 +41,17 @@ def parse_args():
     )
 
     parser.add_argument(
-        '-k', '--k-fold',
-        type=int,
-        required=False,
-        help='number of folds for k-fold cross validation, k=0 or k=1 for no validation'
-    )
-
-    parser.add_argument(
         '-w', '--weights',
         type=str , 
         required=False,
         help='path to save the weights (optional)'
+    )
+
+    parser.add_argument(
+        '-k', '--k-fold',
+        type=int,
+        required=False,
+        help='number of folds for k-fold cross validation, k=0 or k=1 for no validation'
     )
 
     parser.add_argument(
@@ -108,43 +110,40 @@ def main():
     args = parse_args() # parse arguments
     print(' args entered',args)
 
-    training_path = args.training
-    testing_path = args.testing
-    attributes_path = args.attributes
-    weights_path = args.weights
-    debugging = args.debug
+    # create data manager
+    manager = Data(
+        args.training, 
+        args.testing, 
+        args.attributes, 
+        args.debug)
     
     # hyperparameters
-    hidden_units = args.hidden_units
-    epochs = args.epochs
-    learning_rate = args.learning_rate
-    decay = args.decay
-    momentum = args.momentum
-    k_folds = args.k_fold
+    h = {
+            'k_fold': args.k_fold,
+            'learning_rate': args.learning_rate,
+            'momentum': args.momentum,
+            'epochs': args.epochs,
+            'decay': args.decay,
+            'hidden_units': [ args.hidden_units ] # list of number of nodes in each layer
+        }
 
 
     print('\nCreating NN with the parameters provided\n')
     # create the artificial neural network
-    ann = ANN(
-        training_path, # path to training data
-        testing_path, # path to testing data
-        attributes_path, # path to attributes
-        k_folds, # whether to use validation data
-        weights_path, # path to save weights
-        hidden_units, # number of hidden units
-        learning_rate, # learning rate
-        epochs, # number of epochs, -1 for stopping based on validation
-        momentum, # momentum
-        decay, # weight decay gamma
-        debugging # whether to print debugging statements
+    net = ANN(
+        hyperparams=h, 
+        input_units=manager.input_units,
+        output_units=manager.output_units,
+        debug=args.debug
     )
+
     # printing the neural network
-    ann.print_network()
+    net.print_network()
 
 
     print('\nLearning the NN...\n')
     # train the artificial neural network
-    ann.train()
+    net.train()
     print('\nTraining complete\n')
 
     #print weights
