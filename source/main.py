@@ -9,7 +9,7 @@
 # imports
 import argparse
 from utils import Data
-from ann import ANN
+from ann import ANN, k_fold_train
 
 def parse_args():
     '''parse the arguments for artificial neural network'''
@@ -149,7 +149,12 @@ def main():
     else:
         # k fold validation
         training_data = manager.training + manager.validation
-        net.train_with_folds(training_data)
+        net = k_fold_train(
+                net, 
+                training_data, 
+                args.epochs,
+                args.k_fold, 
+                args.debug)
     print('\nTraining complete\n')
 
     #print weights
