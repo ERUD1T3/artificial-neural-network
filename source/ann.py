@@ -404,9 +404,9 @@ class ANN:
             # get the output
             output = self.forward(instance[0])
             # print layer1 output
-            if self.debug:
-                print(f'Input: {instance[0]}')
-                print(f"mid layer: {self.res['layer1']}", end='\n')
+            # if self.debug:
+            #     print(f'Input: {instance[0]}')
+            #     print(f"mid layer: {self.res['layer1']}", end='\n')
             # check if the output is correct
             accuracy += (1.0 - self.loss(instance[1], output, no_decay=True))
         # get the average accuracy
@@ -528,7 +528,7 @@ def k_fold_train(model, train_data, epochs=5000, k=5, debug=False):
         print('Average Score: ', avg_score, '\tAverage Iterations: ', avg_iter)
     
     # train the actual net with average iterations
-    for i in range(int(avg_iter)):
+    for e in range(int(avg_iter)):
         loss = 0.0
 
         for instance in data:
@@ -544,6 +544,6 @@ def k_fold_train(model, train_data, epochs=5000, k=5, debug=False):
         loss /= len(data)
         if debug:
             # print('Weights: ', weights)
-            print(f'Loss: {loss:.3f}', end='\n')
+            print(f'Epoch{e} Loss: {loss:.3f}', end='\n')
 
     return model
