@@ -22,7 +22,6 @@ from utils import Data
 def main():
     '''main of the program'''
 
-    weights_path = 'identity_weights.txt'
     debugging = False
     
     # hyperparameters# create data manager
@@ -70,7 +69,8 @@ def main():
     # test the artificial neural network
     net1.debug = True
     print('\nTesting the NN on testing set ...\n')
-    net1.test(manager.testing)
+    accuracy = net1.test(manager.testing) * 100
+    print('\nAccuracy: ', accuracy, '%\n')
 
 
     h2 = {
@@ -111,7 +111,8 @@ def main():
     # test the artificial neural network
     net2.debug = True
     print('\nTesting the NN on testing set ...\n')
-    net2.test(manager.testing)
+    accuracy = net2.test(manager.testing) * 100
+    print('\nAccuracy: ', accuracy, '%\n')
 
 
     

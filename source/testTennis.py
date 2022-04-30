@@ -9,71 +9,70 @@
 
 # imports
 from ann import ANN
+from utils import Data
 
 
 def main():
     '''main of the program'''
 
-
-    training_path = 'data/tennis/tennis-train.txt'
-    testing_path = 'data/tennis/tennis-test.txt'
-    attributes_path = 'data/tennis/tennis-attr.txt'
-    weights_path = 'tennis_weights.txt'
+    weights_path = 'models/tennis_weights.txt'
     debugging = False
+
+    # hyperparameters# create data manager
+    manager = Data(
+        'data/tennis/tennis-train.txt',
+        'data/tennis/tennis-test.txt', 
+        'data/tennis/tennis-attr.txt',
+        debugging
+    )
     
     # hyperparameters
-    hidden_units = 4
-    epochs = 5000
-    learning_rate = 1e-3
-    decay = 0.001
-    momentum = 0.09
-    k_folds = 3
+    h = {
+            'k_fold': 0,
+            'learning_rate': .01,
+            'momentum': 0.1,
+            'epochs': 2000,
+            'decay': 0.01,
+            'hidden_units': [ 3 ] # list of number of nodes in each layer
+        }
+
+    
 
 
-    print('\nCreating NN with the parameters provided\n')
+    print('\nCreating NN with with parameters provided\n')
     # create the artificial neural network
-    ann = ANN(
-        training_path, # path to training data
-        testing_path, # path to testing data
-        attributes_path, # path to attributes
-        k_folds, # whether to use validation data
-        weights_path, # path to save weights
-        hidden_units, # number of hidden units
-        learning_rate, # learning rate
-        epochs, # number of epochs, -1 for stopping based on validation
-        momentum, # momentum
-        decay, # weight decay gamma
-        debugging # whether to print debugging statements
+    net = ANN(
+        hyperparams=h, 
+        input_units=manager.input_units,
+        output_units=manager.output_units,
+        debug=debugging
     )
     # printing the neural network
-    ann.print_network()
+    net.print_network()
 
 
     print('\nLearning the NN...\n')
     # train the artificial neural network
-    ann.train()
+    net.train(manager.training, manager.validation)
     print('\nTraining complete\n')
 
     #print weights
     print('\nPrinting learned weights\n')
-    ann.print_weights()
+    net.print_weights()
 
     # save the weights
     if weights_path:
-        ann.save(weights_path)
+        net.save(weights_path)
         print('weights saved to', weights_path)
-        # load the weights
-        # ann.load(weights_path)
-        # print('weights loaded from', weights_path)
 
     # test the artificial neural network
     print('\nTesting the NN on training set ...\n')
-    accuracy = ann.test(ann.training) * 100
+    accuracy = net.test(manager.training) * 100
     print('\nTraining set accuracy:', accuracy)
 
     # test the artificial neural network
     print('\nTesting the NN on testing set ...\n')
-    accuracy = ann.test(ann.testing) * 100
+    accuracy = net.test(manager.testing) * 100
     print('\nTesting set accuracy:', accuracy)
 
     print('\nTesting complete\n')
