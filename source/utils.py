@@ -17,13 +17,11 @@ class Data:
         training, 
         testing, 
         attributes, 
-        log_path,
         debug):
         '''
         Initialize the APBT class
         '''
         self.debug = debug
-        self.log_path = log_path
         # reading attributes 
         self.attributes, self.in_attr, self.out_attr = self.read_attributes(attributes) 
         # reading input,output lenght

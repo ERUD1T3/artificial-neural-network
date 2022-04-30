@@ -331,6 +331,7 @@ class ANN:
         Train the Artificial Neural Network
         k is the number of folds
         '''
+        print('Training the network...')
         loss_history = []
         vali_loss_history = []
         # get the data
@@ -358,10 +359,11 @@ class ANN:
                 self.step(errors)
             
             loss /= len(data)
-            loss_history.append(loss)
+            if e % int(.01 * self.epochs) == 0:
+                loss_history.append(loss)
             if self.debug:
                 # print('Weights: ', self.weights)
-                print(f'Net\'s loss: {loss}', end='\n')
+                print(f'Net\'s loss: {loss:.3f} ', end='')
 
             # get the validation loss
             vali_loss = 0.0
@@ -371,17 +373,18 @@ class ANN:
                 vali_loss += self.loss(target, output)
 
             vali_loss /= len(vali_data)
-            vali_loss_history.append(vali_loss)
+            if e % int(.01 * self.epochs) == 0:
+                vali_loss_history.append(vali_loss)
             if self.debug:
-                print(f'Validation loss: {vali_loss}', end='\n')
+                print(f'Validation loss: {vali_loss:.3f}', end='\n')
 
             # stop early if the validation loss is not decreasing
             if len(vali_loss_history) > 1 and \
-                vali_loss_history[-1] > vali_loss_history[-2]:
+                vali_loss_history[-1] > vali_loss_history[-2] * 1.01:
                 break
 
         # save the loss history to csv
-        log_csv('loss.csv', [ loss_history, vali_loss_history], 
+        log_csv('logs/loss.csv', [ loss_history, vali_loss_history], 
             ['Training loss', 'Validation loss'])
 
 
@@ -390,6 +393,7 @@ class ANN:
         Train the Artificial Neural Network
         k is the number of folds
         '''
+        print(f'Training the network with {self.k} folds...')
         if not train_data:
             raise ValueError('No training data provided')
         # get the data

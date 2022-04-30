@@ -8,8 +8,7 @@
 
 # imports
 import argparse
-from source.utils import Data
-from utils import Utils
+from utils import Data
 from ann import ANN
 
 def parse_args():
@@ -143,25 +142,35 @@ def main():
 
     print('\nLearning the NN...\n')
     # train the artificial neural network
-    net.train()
+
+    if args.k_fold == 0:
+        # no k fold validation
+        net.train(manager.training, manager.validation)
+    else:
+        # k fold validation
+        training_data = manager.training + manager.validation
+        net.train_with_folds(training_data)
     print('\nTraining complete\n')
 
     #print weights
     print('\nPrinting learned weights\n')
-    ann.print_weights()
+    net.print_weights()
+
+    w_path = args.weights
 
     # save the weights
-    if weights_path:
-        ann.save(weights_path)
-        print('weights saved to', weights_path)
+    if w_path:
+        net.save(w_path)
+        print('weights saved to', w_path)
         # load the weights
         # ann.load(weights_path)
         # print('weights loaded from', weights_path)
 
     # test the artificial neural network
     print('\nTesting the NN...\n')
-    ann.test()
+    accuracy = 100 * net.test(manager.testing)
     print('\nTesting complete\n')
+    print(f'\nAccuracy: {accuracy:.2f}%\n')
 
 
     
