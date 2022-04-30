@@ -3,11 +3,11 @@ python source/main.py \
 -d data/identity/identity-train.txt \
 -w models/weights.txt \
 -u 3 \
--e 5000 \
--l 1e-3 \
--m 0.1 \
--g 0.01 \
--k 10 \
+-e 100000 \
+-l .01 \
+-m 0.0 \
+-g 0.0 \
+-k 0 \
 --debug
 
 python source/main.py \
@@ -29,8 +29,8 @@ python source/main.py \
 -t data/tennis/tennis-test.txt \
 -w models/weights.txt \
 -u 3 \
--e 10000 \
--l 1e-3 \
+-e 2000 \
+-l .01 \
 -m 0.0 \
 -g 0.0 \
 -k 0 \

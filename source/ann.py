@@ -38,7 +38,7 @@ class ANN:
         self.learning_rate = hyperparams['learning_rate']
         self.momentum = hyperparams['momentum']
         self.decay = hyperparams['decay']
-        self.k_fold = hyperparams['k_fold']
+        self.k = hyperparams['k_fold']
         self.epochs = hyperparams['epochs']
         self.input_units = input_units
         self.output_units = output_units
@@ -58,6 +58,7 @@ class ANN:
         }
 
         self.res = None
+        self.OFFSET = 1.01
         # self.num_params = self.num_params()
 
         # print the everything
@@ -203,6 +204,7 @@ class ANN:
 
                 # applying the activation function
                 res[f'layer{t}'][i] = self.sigmoid(res[f'layer{t}'][i])
+    
 
         # getting the output
         output = res[f'layer{len(self.topology)-1}']
@@ -380,7 +382,7 @@ class ANN:
 
             # stop early if the validation loss is not decreasing
             if len(vali_loss_history) > 1 and \
-                vali_loss_history[-1] > vali_loss_history[-2] * 1.01:
+                vali_loss_history[-1] > vali_loss_history[-2] * self.OFFSET:
                 break
 
         # save the loss history to csv
@@ -472,7 +474,7 @@ class ANN:
 
                 for instance in validation_data:
                     # get the output
-                    output = self.feed_forward(instance[0])
+                    output = self.forward(instance[0])
                     # compute the loss
                     validation_loss += self.loss(instance[1], output)
 
@@ -480,11 +482,11 @@ class ANN:
                 t_loss = train_loss/len(train_data)
 
                 if self.debug:
-                    print('\tTrain Loss: ', t_loss, '\tValidation Loss: ', v_loss)
+                    print(f'\tTrain Loss: {t_loss:.3f} \tValidation Loss: {v_loss:.3f}', end='\n')
 
                 if i == 0 or v_loss < best_validation_loss:
                     best_validation_loss, e = v_loss, i
-                elif v_loss > self.OFFSET + best_validation_loss:
+                elif v_loss > self.OFFSET * best_validation_loss:
                     scores.append(best_validation_loss)
                     iterations.append(e)
                     break
@@ -513,9 +515,10 @@ class ANN:
                 # update the weights
                 self.step(errors)
 
+            loss /= len(data)
             if self.debug:
                 # print('Weights: ', self.weights)
-                print('Loss: ', loss/len(data), end='\n')
+                print(f'Loss: {loss:.3f}', end='\n')
 
 
     def test(self, test_data):
@@ -531,6 +534,10 @@ class ANN:
         for instance in test_data:
             # get the output
             output = self.forward(instance[0])
+            # print layer1 output
+            if self.debug:
+                print(f'Input: {instance[0]}')
+                print(f"mid layer: {self.res['layer1']}", end='\n')
             # check if the output is correct
             accuracy += (1.0 - self.loss(instance[1], output, no_decay=True))
         # get the average accuracy

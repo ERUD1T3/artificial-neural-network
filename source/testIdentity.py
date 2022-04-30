@@ -16,112 +16,102 @@
 
 # imports
 from ann import ANN
+from utils import Data
 
 
 def main():
     '''main of the program'''
 
-    training_path = 'data/identity/identity-train.txt'
-    testing_path = 'data/identity/identity-train.txt'
-    attributes_path = 'data/identity/identity-attr.txt'
     weights_path = 'identity_weights.txt'
     debugging = False
     
+    # hyperparameters# create data manager
+    manager = Data(
+        'data/identity/identity-train.txt',
+        None, 
+        'data/identity/identity-attr.txt',
+        debugging
+    )
+    
     # hyperparameters
-    epochs = 5000
-    learning_rate = .01
-    decay = 0.0
-    momentum = 0.0
-    k_folds = 10
-
-    hidden_units = 3
-
+    h1 = {
+            'k_fold': 0,
+            'learning_rate': .005,
+            'momentum': 0.0,
+            'epochs': 100000,
+            'decay': 0.0,
+            'hidden_units': [ 3 ] # list of number of nodes in each layer
+        }
 
     print('\nCreating NN with with 3 hidden units\n')
     # create the artificial neural network
-    ann3 = ANN(
-        training_path, # path to training data
-        testing_path, # path to testing data
-        attributes_path, # path to attributes
-        k_folds, # whether to use validation data
-        weights_path, # path to save weights
-        hidden_units, # number of hidden units
-        learning_rate, # learning rate
-        epochs, # number of epochs, -1 for stopping based on validation
-        momentum, # momentum
-        decay, # weight decay gamma
-        debugging # whether to print debugging statements
+    # create the artificial neural network
+    net1 = ANN(
+        hyperparams=h1, 
+        input_units=manager.input_units,
+        output_units=manager.output_units,
+        debug=debugging
     )
     # printing the neural network
-    ann3.print_network()
+    net1.print_network()
 
 
     print('\nLearning the NN...\n')
     # train the artificial neural network
-    ann3.train()
+    net1.train(manager.training, manager.validation)
     print('\nTraining complete\n')
 
     #print weights
     print('\nPrinting learned weights\n')
-    ann3.print_weights()
+    net1.print_weights()
 
-    # save the weights
-    if weights_path:
-        ann3.save(weights_path)
-        print('weights saved to', weights_path)
-        # load the weights
-        # ann.load(weights_path)
-        # print('weights loaded from', weights_path)
+
 
     # test the artificial neural network
-    ann3.debug = True
+    net1.debug = True
     print('\nTesting the NN on testing set ...\n')
-    ann3.test()
+    net1.test(manager.testing)
 
 
-    hidden_units = 4
+    h2 = {
+            'k_fold': 0,
+            'learning_rate': .005,
+            'momentum': 0.0,
+            'epochs': 100000,
+            'decay': 0.0,
+            'hidden_units': [ 4 ] # list of number of nodes in each layer
+        }
+
 
 
     print('\nCreating NN with with 4 hidden units\n')
     # create the artificial neural network
-    ann4 = ANN(
-        training_path, # path to training data
-        testing_path, # path to testing data
-        attributes_path, # path to attributes
-        k_folds, # whether to use validation data
-        weights_path, # path to save weights
-        hidden_units, # number of hidden units
-        learning_rate, # learning rate
-        epochs, # number of epochs, -1 for stopping based on validation
-        momentum, # momentum
-        decay, # weight decay gamma
-        debugging # whether to print debugging statements
+    # create the artificial neural network
+    net2 = ANN(
+        hyperparams=h2, 
+        input_units=manager.input_units,
+        output_units=manager.output_units,
+        debug=debugging
     )
     # printing the neural network
-    ann4.print_network()
+    net2.print_network()
 
 
     print('\nLearning the NN...\n')
     # train the artificial neural network
-    ann4.train()
+    net2.train(manager.training, manager.validation)
     print('\nTraining complete\n')
 
     #print weights
     print('\nPrinting learned weights\n')
-    ann4.print_weights()
+    net2.print_weights()
 
-    # save the weights
-    if weights_path:
-        ann4.save(weights_path)
-        print('weights saved to', weights_path)
-        # load the weights
-        # ann.load(weights_path)
-        # print('weights loaded from', weights_path)
 
-     # test the artificial neural network
-    ann4.debug = True
+
+    # test the artificial neural network
+    net2.debug = True
     print('\nTesting the NN on testing set ...\n')
-    ann4.test()
+    net2.test(manager.testing)
 
 
     

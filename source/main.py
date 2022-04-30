@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument(
         '-t', '--testing',
         type=str , 
-        required=True,
+        required=False,
         help='path to the test data files (required)'
     )
 
